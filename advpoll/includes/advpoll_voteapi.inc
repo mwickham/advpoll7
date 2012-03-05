@@ -5,21 +5,21 @@
  */
 
 function advpoll_get_votes($content_type, $content_id) {
+  // TODO: return all votes for a given poll
   return 'woot';
 }
 
 function advpoll_user_eligibility($node) {
+  // TODO: check to see if a given user is eligible to vote on a poll.
   global $user;
   return true;
 }
 
 /*
- *
+ *  Passes votes to the voting api.
  *
  */
-
 function advpoll_add_votes($vote) {
-  global $user;
 
   $votes = array(
       'entity_type' => $vote['type'],
@@ -58,7 +58,6 @@ function advpoll_checkbox_selected($choices, $votes) {
  * Radio buttons returns a string rather than an array.  Need to return
  * an array containing the index equivalent to this choice.
  */
-
 function advpoll_radio_selected($choices, $vote) {
 
   $selected = array();

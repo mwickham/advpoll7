@@ -106,7 +106,7 @@ function advpoll_form_submit($form, &$form_state) {
       $vote['tag'] = $item;
       $vote['nid'] = $nid;
 
-      if ($mode != 'normal') {
+      if ($mode === 'normal') {
         $vote['source'] = time();
         $vote['uid'] = $user->uid;
       } else {
