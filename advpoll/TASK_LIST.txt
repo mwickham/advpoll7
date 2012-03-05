@@ -1,0 +1,7 @@
+1. Electoral list functionality
+2. Write-in functionality
+3. Poll conversion
+4. Permissions settings
+5. Vote retrieval
+6. Implement cookie vote tracking
+7. Implement user vote check 
