@@ -5,3 +5,6 @@
 5. Vote retrieval
 6. Implement cookie vote tracking
 7. Implement user vote check 
+8. Implement permission hooks
+9. Ensure that max votes does not exceed number of choices (catch in node save).
+10. Pass votes to advpoll_bar theme call.

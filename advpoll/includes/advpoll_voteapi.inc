@@ -4,10 +4,48 @@
  * Handles function calls related to voting and selection of votes.
  */
 
-function advpoll_get_votes($content_type, $content_id) {
-    // TODO: return all votes for a given poll
-    return 'woot';
+/**
+ * Get all votes related to a node by content type and node id.
+ *
+ * @param $content_type
+ *        $nid
+ * @return
+ *   An array containing the key:
+ *     'choices' which matches the index of each choice with its tallied votes.
+ *     'total' which is the total of all votes
+ */
+// TODO - make it generate percentages based on tally type.
+function advpoll_get_votes($content_type, $nid) {
+    $tallied = array();
+    $criteria = array();
+    $criteria['entity_id'] = $nid;
+    $criteria['entity_type'] = $content_type;
+    
+    $results = votingapi_select_votes($criteria);
+    $total = 0;
+    
+    foreach($results as $result) {
+        if (isset($tallied[$result['tag']])) {
+            $tallied[$result['tag']]++;
+        } else {
+            $tallied[$result['tag']] = 1;            
+        }
+        
+        $total++;
+    }
+    // meh - fix to return percentages. 
+    return array('choices' => $tallied, 'total' => $total);
 }
+
+function advpoll_approval_vote($votes, $total) {
+    // TODO: pass votes through this function to tally percentages by choice.
+}
+
+function advpoll_pooled_vote($votes, $total) {
+    // TODO: pass votes through this function to tally percentages by pooling all votes.
+}
+
+
 
 function advpoll_user_eligibility($node) {
     // TODO: Permission hooks when implemented.
