@@ -179,8 +179,8 @@ function _advpoll_installed_fields() {
             'module' => 'list',
             'settings' => array(
                 'allowed_values' => array(
-                    'Approval voting' => $t('Approval voting'),
-                    'Pool votes and choices' => $t('Pool votes and choices'),
+                    'approval' => $t('Approval voting'),
+                    'pool' => $t('Pool votes and choices'),
                 ),
                 'allowed_values_function' => '',
             ),
@@ -202,8 +202,8 @@ function _advpoll_installed_fields() {
             'module' => 'list',
             'settings' => array(
                 'allowed_values' => array(
-                    'Close poll' => $t('Close poll'),
-                    'Open poll' => $t('Open poll'),
+                    'close' => $t('Close poll'),
+                    'open' => $t('Open poll'),
                 ),
                 'allowed_values_function' => '',
             ),
@@ -289,10 +289,10 @@ function _advpoll_installed_fields() {
             'module' => 'list',
             'settings' => array(
                 'allowed_values' => array(
-                    'Allow users to cast write-in votes' => $t('Allow users to cast write-in votes'),
-                    'Restrict voting to electoral list' => $t('Restrict voting to electoral list'),
-                    'Show individual votes' => $t('Show individual votes'),
-                    'Generate a block for this poll' => $t('Generate a block for this poll'),
+                    'writein' => $t('Allow users to cast write-in votes'),
+                    'electoral' => $t('Restrict voting to electoral list'),
+                    'showvotes' => $t('Show individual votes'),
+                    'block' => $t('Generate a block for this poll'),
                 ),
                 'allowed_values_function' => '',
             ),
@@ -314,9 +314,9 @@ function _advpoll_installed_fields() {
             'module' => 'list',
             'settings' => array(
                 'allowed_values' => array(
-                    'After voting' => $t('After voting'),
-                    'After poll is closed' => $t('After poll is closed'),
-                    'Never' => 'Never',
+                    'aftervote' => $t('After voting'),
+                    'afterclose' => $t('After poll is closed'),
+                    'never' => 'Never',
                 ),
                 'allowed_values_function' => '',
             ),
@@ -446,7 +446,7 @@ function _advpoll_installed_instances() {
         'advpoll_behavior' => array(
             'default_value' => array(
                 0 => array(
-                    'value' => 'Pool votes and choices',
+                    'value' => 'approval',
                 ),
             ),
             'deleted' => '0',
@@ -490,7 +490,7 @@ function _advpoll_installed_instances() {
         'advpoll_closed' => array(
             'default_value' => array(
                 0 => array(
-                    'value' => 'Open poll',
+                    'value' => 'open',
                 ),
             ),
             'deleted' => '0',
@@ -687,7 +687,7 @@ function _advpoll_installed_instances() {
         'advpoll_options' => array(
             'default_value' => array(
                 0 => array(
-                    'value' => 'Show individual votes',
+                    'value' => 'showvotes',
                 ),
             ),
             'deleted' => '0',
@@ -731,7 +731,7 @@ function _advpoll_installed_instances() {
         'advpoll_results' => array(
             'default_value' => array(
                 0 => array(
-                    'value' => 'After voting',
+                    'value' => 'aftervote',
                 ),
             ),
             'deleted' => '0',
