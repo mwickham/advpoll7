@@ -10,7 +10,7 @@ function advpoll_get_votes($content_type, $content_id) {
 }
 
 function advpoll_user_eligibility($node) {
-    // TODO: check to see if a given user is eligible to vote on a poll.
+    // TODO: Permission hooks when implemented.
     global $user;
     
     $mode = $node->advpoll_mode['und'][0]['value'];
@@ -44,7 +44,7 @@ function advpoll_user_eligibility($node) {
 }
 
 /**
- * Select individual votes from the database.
+ * Add votes for a given poll.
  *
  * @param $vote
  *   A keyed array that is used to determine the method in which the vote will be
