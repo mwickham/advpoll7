@@ -224,13 +224,11 @@ function advpoll_checkbox_selected($choices, $votes) {
   $count = count($choices);
 
   for ($i = 0; $i < $count; $i++) {
-    $choice = strip_tags($choices[$i]['value']);
-
-    if (!is_numeric($votes[$choice])) {
+    $choice = strip_tags($choices[$i]['choice']);
+    if (!is_numeric($votes[$choice]) && !empty($votes[$choice])) {
       $selected[] = $i;
     }
   }
-
   return $selected;
 }
 
@@ -245,7 +243,7 @@ function advpoll_radio_selected($choices, $vote) {
   $count = count($choices);
 
   for ($i = 0; $i < $count; $i++) {
-    $choice = strip_tags($choices[$i]['value']);
+    $choice = strip_tags($choices[$i]['choice']);
 
     if ($choice == strip_tags($vote)) {
       $selected[] = $i;
