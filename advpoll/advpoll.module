@@ -5,7 +5,6 @@
  * Advanced Poll Module 2/29/2012 MW
  */
 module_load_include('inc', 'advpoll', 'includes/advpoll_voteapi');
-module_load_include('inc', 'advpoll', 'includes/advpoll_field');
 
 /**
  * Implements hook_node_view().

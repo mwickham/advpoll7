@@ -1,0 +1,20 @@
+<?php
+
+/*
+ * Custom field widget used by Advanced poll to link write-in flag to each available choice.
+ * 
+ */
+function advpoll_field_field_schema($field) {
+    $columns = array(
+        'choice' => array('type' => 'varchar', 'length' => 2000, 'not null' => TRUE),
+        'write_in' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    );
+
+    $indexes = array(
+        'choice' => array('choice'),
+    );
+    return array(
+        'columns' => $columns,
+        'indexes' => $indexes,
+    );
+}

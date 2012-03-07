@@ -5,26 +5,31 @@
  * Install file for Advanced Poll
  * 
  * */
-/*
- * Custom field widget used by Advanced poll to link write-in flag to each available choice.
- * 
- */
-function advpoll_field_schema($field) {
-    $columns = array(
-        'choice' => array('type' => 'varchar', 'length' => 2000, 'not null' => TRUE),
-        'write_in' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+function advpoll_schema() {
+    // Install electoral list table
+    $schema['advpoll_electoral_list'] = array(
+        'fields' => array(
+            'nid' => array(
+                'description' => t('Node id for the relevant advpoll.'),
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+            'uid' => array(
+                'description' => t('User id who will be given access to vote in an advpoll.'),
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+        ),
+        'primary key' => array('nid', 'uid'),
     );
 
-    $indexes = array(
-        'choice' => array('choice'),
-    );
-    return array(
-        'columns' => $columns,
-        'indexes' => $indexes,
-    );
+    return $schema;
 }
 
 function advpoll_install() {
+
 // fetch the t function for use in install
     $t = get_t();
 
@@ -156,7 +161,7 @@ function _advpoll_installed_fields() {
                     0 => 'choice',
                 ),
             ),
-            'module' => 'advpoll',
+            'module' => 'advpoll_field',
             'settings' => array(),
             'translatable' => '0',
             'type' => 'advpoll',
@@ -360,7 +365,7 @@ function _advpoll_installed_instances() {
         'advpoll_choice' => array(
             'default_value' => NULL,
             'deleted' => '0',
-            'description' => 'Add at least 2 choices for your poll.  Write-in values indicate user generated content.  If you approve of a choice that has been written in by a user, uncheck it and it will be integrated into the poll for others to vote upon.',
+            'description' => $t('Add at least 2 choices for your poll.  Write-in values indicate user generated content.  If you approve of a choice that has been written in by a user, uncheck it and it will be integrated into the poll for others to vote upon.'),
             'display' => array(
                 'default' => array(
                     'label' => 'hidden',
@@ -383,14 +388,14 @@ function _advpoll_installed_instances() {
             ),
             'entity_type' => 'node',
             'field_name' => 'advpoll_choice',
-            'label' => 'Poll Choices',
+            'label' => $t('Poll Choice'),
             'required' => 1,
             'settings' => array(
                 'user_register_form' => FALSE,
             ),
             'widget' => array(
                 'active' => 0,
-                'module' => 'advpoll',
+                'module' => 'advpoll_field',
                 'settings' => array(),
                 'type' => 'advpoll_write_in',
                 'weight' => '2',
