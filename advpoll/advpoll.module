@@ -7,6 +7,81 @@
 module_load_include('inc', 'advpoll', 'includes/advpoll_voteapi');
 
 /**
+ * Implements hook_menu()
+ * 
+ */
+function advpoll_menu() {
+    
+    $menu['node/%node/votes'] = array(
+        'title' => 'Votes',
+        'page callback' => 'advpoll_votes_page',
+        'page arguments' => array(1),
+     //   'access callback' => '_advpoll_votes_access',
+        'access arguments' => array(1),
+        'weight' => 3,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'advpoll.pages.inc',
+    );    
+    // Show electoral list tab if using the functionality.
+    $menu['node/%node/electoral_list'] = array(
+        'title' => 'Electoral list',
+        'page callback' => 'advpoll_electoral_list_page',
+        'page arguments' => array(1),
+    //    'access callback' => '_advpoll_electoral_list_access',
+        'access arguments' => array(1),
+        'weight' => 3,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'advpoll.pages.inc',
+    );
+
+    // Allow voters to be removed.
+    $menu['node/%node/remove'] = array(
+        'page callback' => 'advpoll_remove_voter',
+        'page arguments' => array(1),
+   //     'access arguments' => array('administer polls'),
+        'weight' => 3,
+        'type' => MENU_CALLBACK,
+        'file' => 'advpoll.admin.inc',
+    );
+
+    // Allow votes to be cleared.
+    $menu['node/%node/votes/clear'] = array(
+        'page callback' => 'advpoll_clear_votes_page',
+        'page arguments' => array(1),
+    //    'access callback' => '_advpoll_clear_votes_access',
+        'access arguments' => array(1),
+        'weight' => 3,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'advpoll.pages.inc',
+    );
+
+    // Show the write-ins tab if there is at least one.
+    $menu['node/%node/writeins'] = array(
+        'title' => 'Write-ins',
+        'page callback' => 'advpoll_writeins_page',
+        'page arguments' => array(1),
+      //  'access callback' => '_advpoll_writeins_access',
+        'access arguments' => array(1),
+        'weight' => 3,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'advpoll.pages.inc',
+    );
+    
+    $menu['node/%node/results'] = array(
+        'title' => 'Results',
+        'page callback' => 'advpoll_results_page',
+        'page arguments' => array(1),
+//        'access callback' => '_advpoll_results_access',
+        'access arguments' => array(1),
+        'weight' => 3,
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'advpoll.pages.inc',
+    );    
+    return $menu;
+}
+
+
+/**
  * Implements hook_node_view().
  *
  * Since node is defined as CCK in install script, could not use
