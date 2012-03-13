@@ -17,19 +17,19 @@
  */
 // TODO - make it generate percentages based on tally type.
 function advpoll_get_votes($content_type, $nid, $behavior) {
-  $criteria = array();
-  $criteria['entity_id'] = $nid;
-  $criteria['entity_type'] = $content_type;
+    $criteria = array();
+    $criteria['entity_id'] = $nid;
+    $criteria['entity_type'] = $content_type;
 
-  $results = votingapi_select_votes($criteria);
+    $results = votingapi_select_votes($criteria);
 
-  if ($behavior === 'approval') {
-    $tabulated = advpoll_approval_vote($results);
-  } else {
-    $tabulated = advpoll_pooled_vote($results);
-  }
+    if ($behavior === 'approval') {
+        $tabulated = advpoll_approval_vote($results);
+    } else {
+        $tabulated = advpoll_pooled_vote($results);
+    }
 
-  return $tabulated;
+    return $tabulated;
 }
 
 /**
@@ -47,26 +47,26 @@ function advpoll_get_votes($content_type, $nid, $behavior) {
  *
  */
 function advpoll_approval_vote($results) {
-  $tallied = array();
-  $source = array();
-  $total = 0;
+    $tallied = array();
+    $source = array();
+    $total = 0;
 
-  foreach ($results as $result) {
-    if (isset($tallied[$result['tag']])) {
-      $tallied[$result['tag']]++;
-    } else {
-      $tallied[$result['tag']] = 1;
+    foreach ($results as $result) {
+        if (isset($tallied[$result['tag']])) {
+            $tallied[$result['tag']]++;
+        } else {
+            $tallied[$result['tag']] = 1;
+        }
+
+        if (!in_array($result['timestamp'], $source)) {
+            $source[] = $result['timestamp'];
+        }
     }
 
-    if (!in_array($result['timestamp'], $source)) {
-      $source[] = $result['timestamp'];
-    }
-  }
+    $total = count($source);
+    $tabulated = advpoll_calculate_percentage($tallied, $total);
 
-  $total = count($source);
-  $tabulated = advpoll_calculate_percentage($tallied, $total);
-
-  return array('choices' => $tabulated, 'total' => $total);
+    return array('choices' => $tabulated, 'total' => $total);
 }
 
 /**
@@ -78,22 +78,22 @@ function advpoll_approval_vote($results) {
  *   An array of percentages per choice index and total votes.
  */
 function advpoll_pooled_vote($results) {
-  // TODO: pass votes through this function to tally percentages by pooling all votes.
-  $tallied = array();
-  $total = 0;
-  foreach ($results as $result) {
-    if (isset($tallied[$result['tag']])) {
-      $tallied[$result['tag']]++;
-    } else {
-      $tallied[$result['tag']] = 1;
+    // TODO: pass votes through this function to tally percentages by pooling all votes.
+    $tallied = array();
+    $total = 0;
+    foreach ($results as $result) {
+        if (isset($tallied[$result['tag']])) {
+            $tallied[$result['tag']]++;
+        } else {
+            $tallied[$result['tag']] = 1;
+        }
+
+        $total++;
     }
 
-    $total++;
-  }
+    $tabulated = advpoll_calculate_percentage($tallied, $total);
 
-  $tabulated = advpoll_calculate_percentage($tallied, $total);
-
-  return array('choices' => $tabulated, 'total' => $total);
+    return array('choices' => $tabulated, 'total' => $total);
 }
 
 /**
@@ -108,64 +108,65 @@ function advpoll_pooled_vote($results) {
  *   votes = the number of votes received
  */
 function advpoll_calculate_percentage($tallied, $total) {
-  $tabulated = array();
-  
-  foreach ($tallied as $key => $value) {
-    $percentage = floor((int)$value/(int)$total * 100);
-    $tabulated[] = array('index' => $key, 'percentage' => $percentage, 'votes' => $value);
-  }
+    $tabulated = array();
 
-  usort($tabulated, "advpoll_compare");
-  $tabulated = array_reverse($tabulated);
+    foreach ($tallied as $key => $value) {
+        $percentage = floor((int) $value / (int) $total * 100);
+        $tabulated[] = array('index' => $key, 'percentage' => $percentage, 'votes' => $value);
+    }
 
-  return $tabulated;
+    usort($tabulated, "advpoll_compare");
+    $tabulated = array_reverse($tabulated);
+
+    return $tabulated;
 }
 
 /*
  * callback for usort to order items by percentage.
  */
-function advpoll_compare($a,$b) {
-  if ($a['percentage'] > $b['percentage']) {
-    return 1;
-  } else if ($a['percentage'] < $b['percentage']) {
-    return -1;
-  } else {
-    return 0;
-  }
+
+function advpoll_compare($a, $b) {
+    if ($a['percentage'] > $b['percentage']) {
+        return 1;
+    } else if ($a['percentage'] < $b['percentage']) {
+        return -1;
+    } else {
+        return 0;
+    }
 }
 
 function advpoll_user_eligibility($node) {
-  // TODO: Permission hooks when implemented.
-  global $user;
+    // TODO: Permission hooks when implemented.
+    global $user;
 
-  $mode = $node->advpoll_mode['und'][0]['value'];
+    $mode = $node->advpoll_mode[$node->language][0]['value'];
 
-  if ($node->advpoll_closed['und'][0]['value'] !== 'open') {
-    return false;
-  }
-
-  if (strtotime($node->advpoll_dates['und'][0]['value2']) < time()) {
-    return false;
-  }
-
-  if ($mode === 'cookie' && isset($_COOKIE[$node->type . $node->nid])) {
-    return false;
-  }
-
-  if ($node->advpoll_mode['und'][0]['value'] === 'normal') {
-    $criteria = array();
-    $criteria['entity_id'] = $node->nid;
-    $criteria['entity_type'] = $node->type;
-
-    $criteria['uid'] = $user->uid;
-
-    $results = votingapi_select_votes($criteria);
-    if ($results) {
-      return false;
+    if ($node->advpoll_closed[$node->language][0]['value'] !== 'open') {
+        return false;
     }
-  }
 
-  return true;
+    if (strtotime($node->advpoll_dates[$node->language][0]['value2']) < time()) {
+        return false;
+    }
+
+    if ($mode === 'cookie' && isset($_COOKIE[$node->type . $node->nid])) {
+        return false;
+    }
+
+    if ($node->advpoll_mode[$node->language][0]['value'] === 'normal') {
+        $criteria = array();
+        $criteria['entity_id'] = $node->nid;
+        $criteria['entity_type'] = $node->type;
+
+        $criteria['uid'] = $user->uid;
+
+        $results = votingapi_select_votes($criteria);
+        if ($results) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -182,35 +183,35 @@ function advpoll_user_eligibility($node) {
  */
 function advpoll_add_votes($vote) {
 
-  // normal voting uses the voteapi to record user id or ip based on authentication
-  if ($vote['mode'] === 'normal') {
-    $votes = array(
-        'entity_type' => $vote['type'],
-        'entity_id' => $vote['nid'],
-        'value' => 1,
-        'tag' => $vote['tag'],
-    );
-  } else {
-    // unlimited and cookie voting simply add values to the votingapi and bypass user id and ip as source.
-    // time stamp instead of ip will prevent a unique id from being tied to these voters.
-    if ($vote['mode'] === 'cookie') {
-      // necessary to pass Drupal's $cookie_domain to get this to stick.
-      // Raw cookies are safe in this case as we're only passing a static value to mark that this
-      // user voted on their machine.
-      setrawcookie($vote['type'] . $vote['nid'], 'vote', time() + (60 * $vote['duration']), '/', $cookie_domain);
+    // normal voting uses the voteapi to record user id or ip based on authentication
+    if ($vote['mode'] === 'normal') {
+        $votes = array(
+            'entity_type' => $vote['type'],
+            'entity_id' => $vote['nid'],
+            'value' => 1,
+            'tag' => $vote['tag'],
+        );
+    } else {
+        // unlimited and cookie voting simply add values to the votingapi and bypass user id and ip as source.
+        // time stamp instead of ip will prevent a unique id from being tied to these voters.
+        if ($vote['mode'] === 'cookie') {
+            // necessary to pass Drupal's $cookie_domain to get this to stick.
+            // Raw cookies are safe in this case as we're only passing a static value to mark that this
+            // user voted on their machine.
+            setrawcookie($vote['type'] . $vote['nid'], 'vote', time() + (60 * $vote['duration']), '/', $cookie_domain);
+        }
+
+        $votes = array(
+            'entity_type' => $vote['type'],
+            'entity_id' => $vote['nid'],
+            'value' => 1,
+            'tag' => $vote['tag'],
+            'uid' => '',
+            'vote_source' => time(),
+        );
     }
 
-    $votes = array(
-        'entity_type' => $vote['type'],
-        'entity_id' => $vote['nid'],
-        'value' => 1,
-        'tag' => $vote['tag'],
-        'uid' => '',
-        'vote_source' => time(),
-    );
-  }
-
-  votingapi_set_votes($votes, $criteria = NULL);
+    votingapi_set_votes($votes, $criteria = NULL);
 }
 
 /*
@@ -220,16 +221,16 @@ function advpoll_add_votes($vote) {
  */
 
 function advpoll_checkbox_selected($choices, $votes) {
-  $selected = array();
-  $count = count($choices);
+    $selected = array();
+    $count = count($choices);
 
-  for ($i = 0; $i < $count; $i++) {
-    $choice = strip_tags($choices[$i]['choice']);
-    if (!is_numeric($votes[$choice]) && !empty($votes[$choice])) {
-      $selected[] = $i;
+    for ($i = 0; $i < $count; $i++) {
+        $choice = strip_tags($choices[$i]['choice']);
+        if (!is_numeric($votes[$choice]) && !empty($votes[$choice])) {
+            $selected[] = $choices[$i]['choice_id'];
+        }
     }
-  }
-  return $selected;
+    return $selected;
 }
 
 /*
@@ -239,16 +240,16 @@ function advpoll_checkbox_selected($choices, $votes) {
 
 function advpoll_radio_selected($choices, $vote) {
 
-  $selected = array();
-  $count = count($choices);
+    $selected = array();
+    $count = count($choices);
 
-  for ($i = 0; $i < $count; $i++) {
-    $choice = strip_tags($choices[$i]['choice']);
+    for ($i = 0; $i < $count; $i++) {
+        $choice = strip_tags($choices[$i]['choice']);
 
-    if ($choice == strip_tags($vote)) {
-      $selected[] = $i;
+        if ($choice == strip_tags($vote)) {
+            $selected[] = $choices[$i]['choice_id'];
+        }
     }
-  }
 
-  return $selected;
+    return $selected;
 }
