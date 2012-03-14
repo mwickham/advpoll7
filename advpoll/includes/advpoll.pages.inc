@@ -77,13 +77,11 @@ function advpoll_votes_page($node) {
 }
 
 function advpoll_match_tag_to_choice($choices, $tag) {
-
     foreach ($choices as $choice) {
         if ($choice['choice_id'] == $tag) {
             return $choice['choice'];
         }
     }
-
     return;
 }
 
@@ -99,14 +97,209 @@ function advpoll_clear_votes_form($form, &$form_state) {
 }
 
 function advpoll_electoral_list_page($node) {
-    return 'electoral list';
+    $output = '';
+
+    if (user_access('administer polls')) {
+        $output .= drupal_render(drupal_get_form('advpoll_electoral_list_form', $node->nid));
+    }
+
+    $output .= '<p>' . t('This table lists all the eligible voters for this poll.') . '</p>';
+
+    $header = array();
+    $header[] = array('data' => t('Voter'), 'field' => 'name');
+    $header[] = array('data' => t('Remove'), 'field' => 'uid');
+
+    $query = db_select('advpoll_electoral_list', 'el');
+    $query->join('users', 'u', 'el.uid = u.uid');
+    $query->condition('el.nid', $node->nid);
+
+    $query->extend('PagerDefault')
+            ->limit(20)
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->fields('u', array(
+                'name',
+                'uid',
+            ));
+
+    $results = $query->execute();
+
+    $rows = array();
+    foreach ($results as $item) {
+        $voter = '';
+        if (user_access('administer polls')) {
+            $voter = l(t('remove'), 'node/' . $node->nid . '/remove/' . $item->uid);
+        }
+        
+        $rows[] = array(
+            'data' => array(
+                $item->name,
+                $voter,
+            )
+        );
+    }
+
+    if ($rows) {
+        $output .= theme('table', array(
+            'header' => $header,
+            'rows' => $rows,
+                )
+        );
+
+        $output .= theme('pager', array('tags' => array()));
+    } else {
+        $output .= '<hr /><p>' . t('No users have currently been added to the electoral list for %title', array('%title' => $node->title)) . '</p>';
+    }
+
+    return $output;
 }
 
-function advpoll_remove_voter($node) {
+/**
+ * Build electorial list form.
+ */
+function advpoll_electoral_list_form($form, &$form_state, $nid) {
+    $form['electoral_list'] = array(
+        '#type' => 'fieldset',
+        '#tree' => TRUE,
+        '#title' => t('Administer electoral list'),
+        '#collapsible' => TRUE,
+        '#weight' => 2,
+    );
+    $form['electoral_list']['add_user'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Add user'),
+        '#size' => 40,
+        '#description' => t('Add an individual user to the electoral list.'),
+    );
 
+    // Enable autocompletion if user has required permission.
+    if (user_access('access user profiles')) {
+        $form['electoral_list']['add_user']['#autocomplete_path'] = 'user/autocomplete';
+    }
 
+    // List all roles with "vote on polls" permission, but don't include anonymous users.
+    $result = db_query("SELECT r.name, r.rid FROM {role} r LEFT JOIN {role_permission} p ON p.rid = r.rid WHERE p.permission LIKE '%vote on polls%' AND r.rid <> 1 ORDER BY r.name");
+    $role_options = array(0 => t('(Select a role)'));
 
-    return 'remove voter';
+    foreach ($result as $record) {
+        $role_options[$record->rid] = $record->name;
+    }
+
+    $form['electoral_list']['add_role'] = array(
+        '#type' => 'select',
+        '#title' => t('Add users by role'),
+        '#description' => t('Only roles that have the "vote on polls" permission are listed.'),
+        '#options' => $role_options,
+    );
+    $form['electoral_list']['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Add to electoral list'),
+    );
+    $form['electoral_list']['reset'] = array(
+        '#type' => 'button',
+        '#value' => t('Clear electoral list'),
+    );
+
+    $form['nid'] = array('#type' => 'hidden', '#value' => $nid);
+    return $form;
+}
+
+/*
+ * Handles results of submitting electoral administration form.
+ */
+
+function advpoll_electoral_list_form_submit($form, &$form_state) {
+    $add_user = $form_state['values']['electoral_list']['add_user'];
+    $nid = $form_state['values']['nid'];
+
+    // using new db_merge method to avoid having to write multiple checks for insert.
+    if ($add_user) {
+        $uid = db_query('SELECT uid FROM {users} WHERE name = :user', array(':user' => $add_user))->fetchField();
+        db_merge('advpoll_electoral_list')
+                ->key(array(
+                    'nid' => $nid,
+                    'uid' => $uid,
+                ))
+                ->fields(array(
+                    'nid' => $nid,
+                    'uid' => $uid,
+                ))
+                ->execute();
+        drupal_set_message(t('%user added to electoral list.', array('%user' => $add_user)));
+    }
+
+    $add_role = $form_state['values']['electoral_list']['add_role'];
+    $roles = $form['electoral_list']['add_role']['#options'];
+
+    if ($add_role) {
+        $result = db_query("SELECT u.uid FROM {users} u LEFT JOIN {users_roles} ur ON u.uid = ur.uid WHERE ur.rid = :rid", array(':rid' => $add_role));
+
+        foreach ($result as $record) {
+            db_merge('advpoll_electoral_list')
+                    ->key(array(
+                        'nid' => $nid,
+                        'uid' => $record->uid,
+                    ))
+                    ->fields(array(
+                        'nid' => $nid,
+                        'uid' => $record->uid,
+                    ))
+                    ->execute();
+        }
+
+        drupal_set_message(t('All users with %role role added to electoral list.', array('%role' => $roles[$add_role])));
+    }
+}
+
+/**
+ * Validate changes to the electoral list.
+ */
+function advpoll_electoral_list_form_validate($form, &$form_state) {
+    if ($form_state['values']['op'] == t('Clear electoral list')) {
+        if (user_access('administer polls')) {
+            $nid = $form_state['values']['nid'];
+            $items_deleted = db_delete('advpoll_electoral_list')
+                    ->condition('nid', $nid)
+                    ->execute();
+
+            drupal_set_message(t('@items cleared from the Electoral list.', array('@items' => $items_deleted)));
+            return;
+        }
+    }
+
+    $add_user = $form_state['values']['electoral_list']['add_user'];
+    if ($add_user) {
+        // Check that the user exists
+        $result = db_query("SELECT uid FROM {users} WHERE name = :name", array(':name' => $add_user));
+        if (!$result) {
+            form_set_error('electoral_list][add_user', t('User %user does not exist.', array('%user' => $add_user)));
+            return FALSE;
+        }
+    }
+}
+
+/**
+ * Remove an individual voter from the electoral list.
+ */
+function advpoll_remove_voter() {
+    $nid = arg(1);
+    $uid = arg(3);
+
+    if (is_numeric($nid) && is_numeric($uid)) {
+        if ($uid && $node = node_load($nid)) {
+            $user = db_query('SELECT name FROM {users} WHERE uid = :uid', array(':uid' => $uid))->fetchField();
+            if ($user) {
+                $and = db_and()->condition('nid', $nid)->condition('uid', $uid);
+                $items_deleted = db_delete('advpoll_electoral_list')
+                        ->condition($and)
+                        ->execute();
+                drupal_set_message(t('%user removed from the electoral list.', array('%user' => $user)));
+            } else {
+                drupal_set_message(t('No user found with a uid of %uid.', array('%uid' => $uid)));
+            }
+        }
+    }
+    drupal_goto('node/' . $node->nid . '/electoral_list');
 }
 
 function advpoll_clear_votes_page($node) {

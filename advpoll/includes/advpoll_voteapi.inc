@@ -16,7 +16,7 @@
  *     'total' which is the total of all votes
  */
 // TODO - make it generate percentages based on tally type.
-function advpoll_get_votes($content_type, $nid, $behavior) {
+function advpoll_get_votes($content_type, $nid, $behavior = 'approval') {
     $criteria = array();
     $criteria['entity_id'] = $nid;
     $criteria['entity_type'] = $content_type;

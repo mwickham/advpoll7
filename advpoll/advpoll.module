@@ -16,7 +16,7 @@ function advpoll_menu() {
         'title' => 'Votes',
         'page callback' => 'advpoll_votes_page',
         'page arguments' => array(1),
-        //   'access callback' => '_advpoll_votes_access',
+        'access callback' => '_advpoll_votes_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -28,7 +28,7 @@ function advpoll_menu() {
         'title' => 'Electoral list',
         'page callback' => 'advpoll_electoral_list_page',
         'page arguments' => array(1),
-        //    'access callback' => '_advpoll_electoral_list_access',
+        'access callback' => '_advpoll_electoral_list_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -40,10 +40,10 @@ function advpoll_menu() {
     $menu['node/%node/remove'] = array(
         'page callback' => 'advpoll_remove_voter',
         'page arguments' => array(1),
-        //     'access arguments' => array('administer polls'),
+        'access arguments' => array('administer polls'),
         'weight' => 3,
         'type' => MENU_CALLBACK,
-        'file' => 'advpoll.admin.inc',
+        'file' => 'advpoll.pages.inc',
         'file path' => drupal_get_path('module', 'advpoll') . '/includes',
     );
 
@@ -51,7 +51,7 @@ function advpoll_menu() {
     $menu['node/%node/votes/clear'] = array(
         'page callback' => 'advpoll_clear_votes_page',
         'page arguments' => array(1),
-        //    'access callback' => '_advpoll_clear_votes_access',
+        'access callback' => '_advpoll_clear_votes_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -64,7 +64,7 @@ function advpoll_menu() {
         'title' => 'Write-ins',
         'page callback' => 'advpoll_writeins_page',
         'page arguments' => array(1),
-        //  'access callback' => '_advpoll_writeins_access',
+        'access callback' => '_advpoll_writeins_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -76,7 +76,7 @@ function advpoll_menu() {
         'title' => 'Results',
         'page callback' => 'advpoll_results_page',
         'page arguments' => array(1),
-//        'access callback' => '_advpoll_results_access',
+        'access callback' => '_advpoll_results_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -88,7 +88,7 @@ function advpoll_menu() {
     $menu['node/%node/votes/clear'] = array(
         'page callback' => 'advpoll_clear_votes_page',
         'page arguments' => array(1),
-        //  'access callback' => '_advpoll_clear_votes_access',
+        'access callback' => '_advpoll_clear_votes_access',
         'access arguments' => array(1),
         'weight' => 3,
         'type' => MENU_LOCAL_TASK,
@@ -96,6 +96,47 @@ function advpoll_menu() {
         'file' => 'advpoll.pages.inc',
     );
     return $menu;
+}
+
+/**
+ * Implementation of hook_permission().
+ * Note - rules for editting, deleting or creating polls is now handled by Node permissions
+ * since the poll content types are CCK.
+ */
+function advpoll_permission() {
+    return array(
+        'vote on polls' => array(
+            'title' => t('Vote on polls'),
+            'description' => t('User may vote on polls.'),
+        ),
+        'cancel own vote'=> array(
+            'title' => t('Cancel own vote'),
+            'description' => t('User may cancel their vote in cases where individual user votes are being tracked.'),
+        ),
+        'administer polls'=> array(
+            'title' => t('Administer polls'),
+            'description' => t('User may use poll administration pages.'),
+            'restrict access' => TRUE,
+        ),
+        'inspect all votes' => array(
+            'title' => t('Inspect all votes'),
+            'description' => t('User may use votes administration page.'),
+            'restrict access' => TRUE,
+        ),
+        'show vote results' => array(
+            'title' => t('Show vote results'),
+            'description' => t('User may view poll results in cases where access to results is generally restricted.'),
+        ),
+        'access electoral list' => array(
+            'title' => t('Access electoral list'),
+            'description' => t('User may see electoral lists associated with each poll.'),
+        ),
+        'add write-ins'=> array(
+            'title' => t('Add write-in votes'),
+            'description' => t('User may add write-ins for polls that allow them.'),
+            'restrict access' => TRUE,
+        ),
+    );
 }
 
 /**
@@ -276,4 +317,75 @@ function advpoll_theme($existing, $type, $theme, $path) {
             'template' => 'advpoll-bar'
         ),
     );
+}
+
+/**
+ * Results access callback.
+ */
+function _advpoll_results_access($node) {
+// TODO - get appropriate values from new node structure.
+    $type = FALSE;
+    if ($node->type == 'advpoll' || $node->type == 'advpoll_ranking' ) {
+        $type = TRUE;
+    }
+    
+    $votes = advpoll_get_votes($node->type, $node->nid);
+
+    return strstr($node->type, 'advpoll_') && _advpoll_is_active($node) && $node->votes > 0 && !$node->voted && _advpoll_can_view_results($node);
+}
+
+/**
+ * Electorial list access callback.
+ */
+function _advpoll_electoral_list_access($node) {
+    $electoral = FALSE;
+    $type = FALSE;
+    $options = $node->advpoll_options[$node->language];
+    
+    foreach($options as $option) {
+        if ($option['value'] == 'electoral') {
+            $electoral = TRUE;
+            break;
+        }
+    }
+    
+    if ($node->type == 'advpoll') {
+        $type = TRUE;
+    }
+        
+    return user_access('access electoral list') && $type && $electoral;
+}
+
+/**
+ * Votes access callback.
+ */
+function _advpoll_votes_access($node) {
+    // TODO - get the appropriate values from the new node structure
+    return strstr($node->type, 'advpoll_') && $node->votes > 0 && ((user_access('inspect all votes') && $node->show_votes) || user_access('administer polls'));
+}
+
+/**
+ * Clear votes access callback.
+ */
+function _advpoll_clear_votes_access($node) {
+    // TODO - get the appropriate values from the new node structure
+    return strstr($node->type, 'advpoll_') && $node->votes > 0 && user_access('administer polls');
+}
+
+/**
+ * Writeins access callback.
+ */
+function _advpoll_writeins_access($node) {
+    // TODO - get the appropriate values from the new node structure
+    if (!strstr($node->type, 'advpoll_') || !user_access('administer polls')) {
+        return FALSE;
+    }
+
+    foreach ($node->choice as $choice) {
+        if ($choice['writein']) {
+            // Has at least one write-in choice.
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
