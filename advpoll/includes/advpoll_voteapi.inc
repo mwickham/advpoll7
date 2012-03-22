@@ -87,7 +87,6 @@ function advpoll_pooled_vote($results) {
         } else {
             $tallied[$result['tag']] = 1;
         }
-
         $total++;
     }
 
@@ -136,24 +135,32 @@ function advpoll_compare($a, $b) {
 }
 
 function advpoll_user_eligibility($node) {
-    // TODO: Permission hooks when implemented.
+    if (!user_access('vote on polls')) {
+        return false;
+    }
+
     global $user;
+    $data = advpoll_get_data($node);
 
-    $mode = $node->advpoll_mode[$node->language][0]['value'];
+    if ($data->electoral) {
+        if (!advpoll_check_electoral_list($user->uid, $node->nid)) {
+            return false;
+        }
+    }
 
-    if ($node->advpoll_closed[$node->language][0]['value'] !== 'open') {
+    if ($data->state !== 'open') {
         return false;
     }
 
-    if (strtotime($node->advpoll_dates[$node->language][0]['value2']) < time()) {
+    if ($data->start_date > time() || $data->end_date < time()) {
         return false;
     }
 
-    if ($mode === 'cookie' && isset($_COOKIE[$node->type . $node->nid])) {
+    if ($data->mode === 'cookie' && isset($_COOKIE[$node->type . $node->nid])) {
         return false;
     }
 
-    if ($node->advpoll_mode[$node->language][0]['value'] === 'normal') {
+    if ($data->mode === 'normal') {
         $criteria = array();
         $criteria['entity_id'] = $node->nid;
         $criteria['entity_type'] = $node->type;
@@ -167,6 +174,16 @@ function advpoll_user_eligibility($node) {
     }
 
     return true;
+}
+
+function advpoll_check_electoral_list($uid, $nid) {
+    $result = db_query('SELECT uid FROM {advpoll_electoral_list} WHERE uid = :uid AND nid = :nid', array(':uid' => $uid, ':nid' => $nid))->fetchField();
+
+    if ($result) {
+        return true;
+    }
+
+    return false;
 }
 
 /**

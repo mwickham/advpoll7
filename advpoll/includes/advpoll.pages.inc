@@ -1,16 +1,22 @@
 <?php
 
 /*
- * Page for displaying vote administration tab pages.
+ * All items in this document are responsible for generating the tab (menu local) pages
+ * that are used for administering an individual poll.
  */
 
+/*
+ * Generates page for administering individual voters on a poll.  Enables administrator
+ * to clear all votes. For users that can view votes but not administer them, the button
+ * is not displayed.
+ */
 function advpoll_votes_page($node) {
-    $mode = $node->advpoll_mode[$node->language][0]['value'];
-    $choices = $node->advpoll_choice[$node->language];
+    $data = advpoll_get_data($node);
+
     $output = t('This table lists all the recorded votes for this poll.');
-    if ($mode == 'unlimited') {
+    if ($data->mode == 'unlimited') {
         $output = t('With unlimited voting, a timestamp is used to identify unique votes.  If it is important to identify users by ID or IP, switch to normal voting mode which will use your Voting API settings to record votes.');
-    } else if ($mode == 'cookie') {
+    } else if ($data->mode == 'cookie') {
         $output = t('With cookie-based voting, a timestamp is used to identify unique votes while the poll\'s id is set in the cookie to limit votes for a limited time.  If it is important to identify users by ID or IP, switch to normal voting mode which will use your Voting API settings to record votes.');
     } else {
         $output = t('If anonymous users are allowed to vote, they will be identified by the IP address of the computer they used when they voted.');
@@ -55,7 +61,7 @@ function advpoll_votes_page($node) {
             'data' => array(
                 $userID,
                 format_date($item->timestamp),
-                advpoll_match_tag_to_choice($choices, $item->tag),
+                advpoll_match_tag_to_choice($data->choices, $item->tag),
             )
         );
     }
@@ -68,7 +74,9 @@ function advpoll_votes_page($node) {
         );
 
         $output .= theme('pager', array('tags' => array()));
-        $output .= drupal_render(drupal_get_form('advpoll_clear_votes_form'));
+        if (user_access('administer votes')) {
+            $output .= drupal_render(drupal_get_form('advpoll_clear_votes_form'));
+        }
     } else {
         $output .= '<hr /><p>' . t('No votes are currently recorded for %title', array('%title' => $node->title)) . '</p>';
     }
@@ -106,9 +114,10 @@ function advpoll_electoral_list_page($node) {
     $output .= '<p>' . t('This table lists all the eligible voters for this poll.') . '</p>';
 
     $header = array();
-    $header[] = array('data' => t('Voter'), 'field' => 'name');
-    $header[] = array('data' => t('Remove'), 'field' => 'uid');
-
+    $header[] = array('data' => t('Voter  '), 'field' => 'name');
+    if (user_access('administer polls')) {
+        $header[] = array('data' => t('Remove'), 'field' => 'uid');
+    }
     $query = db_select('advpoll_electoral_list', 'el');
     $query->join('users', 'u', 'el.uid = u.uid');
     $query->condition('el.nid', $node->nid);
@@ -130,13 +139,21 @@ function advpoll_electoral_list_page($node) {
         if (user_access('administer polls')) {
             $voter = l(t('remove'), 'node/' . $node->nid . '/remove/' . $item->uid);
         }
-        
-        $rows[] = array(
-            'data' => array(
-                $item->name,
-                $voter,
-            )
-        );
+
+        if ($voter) {
+            $rows[] = array(
+                'data' => array(
+                    $item->name,
+                    $voter,
+                )
+            );
+        } else {
+            $rows[] = array(
+                'data' => array(
+                    $item->name,
+                )
+            );
+        }
     }
 
     if ($rows) {
@@ -325,7 +342,7 @@ function advpoll_clear_votes_confirm_form($form, &$form_state, $nid, $title) {
 function advpoll_clear_votes_confirm_form_submit($form, &$form_state) {
     $nid = (int) check_plain(arg(1));
     db_delete('votingapi_vote')->condition('entity_id', $nid)->execute();
-    drupal_goto('node/' . $nid . '/votes');
+    drupal_goto('node/' . $nid);
 }
 
 /*
@@ -348,14 +365,14 @@ function advpoll_writeins_page($node) {
 
 function advpoll_promote_writein_form($form, &$form_state, $node) {
 
-    $choices = $node->advpoll_choice[$node->language];
-    $count = count($choices);
+    $data = advpoll_get_data($node);
+    $count = count($data->choices);
 
     $options = array();
 
     for ($i = 0; $i < $count; $i++) {
-        if ($choices[$i]['write_in']) {
-            $options[] = strip_tags($choices[$i]['choice']);
+        if ($data->choices[$i]['write_in']) {
+            $options[] = strip_tags($data->choices[$i]['choice']);
         }
     }
     $form['#id'] = 'advpoll-promote_writein';
@@ -426,6 +443,11 @@ function advpoll_promote_writein_form_submit($form, &$form_state) {
     }
 }
 
+/*
+ * Provides form for merging write-in section of the Write-ins administration
+ * node page.
+ */
+
 function advpoll_merge_writein_form($form, &$form_state, $node) {
 
     $choices = $node->advpoll_choice[$node->language];
@@ -461,8 +483,6 @@ function advpoll_merge_writein_form($form, &$form_state, $node) {
             '#title' => t('into'),
             '#options' => drupal_map_assoc($all),
         );
-
-
         $form['merge_writein']['submit'] = array(
             '#type' => 'submit',
             '#value' => t('Merge'),
@@ -493,6 +513,7 @@ function advpoll_merge_writein_form_submit($form, &$form_state) {
 
     $fromTag = '';
     $toTag = '';
+    // match up unique choice id with selected choice
     foreach ($choices as $choice) {
         if (strtolower(strip_tags($choice['choice'])) == $mergeFrom) {
             $fromTag = $choice['choice_id'];
@@ -501,11 +522,13 @@ function advpoll_merge_writein_form_submit($form, &$form_state) {
         }
     }
 
+    // no matches, no merge
     if (!$fromTag || !$toTag) {
         drupal_set_message(t('Unidentifed index for index merging.'));
         return;
     }
 
+    // get votes that belonged to the merge from value
     $criteria = array('entity_id' => $nid, 'tag' => $fromTag);
     $mergeFromVotes = votingapi_select_votes($criteria);
 
@@ -548,14 +571,11 @@ function advpoll_merge_writein_form_submit($form, &$form_state) {
 
 function advpoll_results_page($node) {
     drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
-
+    $data = advpoll_get_data($node);
     $output = '';
 
     if ($node) {
-        $choices = $node->advpoll_choice[$node->language];
-        $content_type = $node->type;
-        $behavior = $node->advpoll_behavior[$node->language][0]['value'];
-        $output = advpoll_display_results($choices, $content_type, $node->nid, $behavior);
+        $output = advpoll_display_results($node->type, $node->nid, $data);
     }
 
     return $output;
