@@ -15,7 +15,7 @@
  *     'choices' which matches the index of each choice with its tallied votes.
  *     'total' which is the total of all votes
  */
-// TODO - make it generate percentages based on tally type.
+
 function advpoll_get_votes($content_type, $nid, $behavior = 'approval') {
     $criteria = array();
     $criteria['entity_id'] = $nid;
@@ -78,7 +78,6 @@ function advpoll_approval_vote($results) {
  *   An array of percentages per choice index and total votes.
  */
 function advpoll_pooled_vote($results) {
-    // TODO: pass votes through this function to tally percentages by pooling all votes.
     $tallied = array();
     $total = 0;
     foreach ($results as $result) {
@@ -269,4 +268,40 @@ function advpoll_radio_selected($choices, $vote) {
     }
 
     return $selected;
+}
+
+/**
+ * Return unique choice ids for a given node id and user id.
+ *
+ * @param $vote
+ *   A keyed array that is used to determine the method in which the vote will be
+ *   tracked and what values will be passed to votingapi
+ *          $vote['type'] The content type - either advpoll or advpoll_ranking
+ *          $vote['tag'] = Tag corresponds to the index of the selected choice
+ *          $vote['nid'] = The node ID of poll being voted on
+ *          $vote['mode'] = normal, cookie, or unlimited
+ *          $vote['duration'] = duration is minutes that the cookie will last if one is set.
+ */
+function advpoll_get_user_votes($nid, $content_type) {
+    global $user;
+    $votes = array();
+    $criteria = array();
+    $criteria['entity_id'] = $nid;
+    $criteria['entity_type'] = $content_type;
+
+    if ($user->uid) {
+        $criteria['uid'] = $user->uid;
+    } else {
+        $criteria['vote_source'] = ip_address();
+    }
+
+    $results = votingapi_select_votes($criteria);
+
+    if ($results) {
+        foreach ($results as $result) {
+            $votes[] = $result['tag'];
+        }
+    }
+    
+    return $votes;
 }

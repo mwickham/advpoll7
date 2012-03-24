@@ -282,7 +282,7 @@ function _advpoll_installed_fields() {
                 'allowed_values' => array(
                     'normal' => $t('Normal (handled by default Vote API settings)'),
                     'cookie' => $t('By Cookie'),
-                    'unlimited' => $t('Unlimited (Both anonymous and authenticated users may vote repeatedly). Write-ins are disabled.'),
+                    'unlimited' => $t('Unlimited (Allows those with permission to vote on polls to vote as many times as they wish. Write-ins are disabled).'),
                 ),
                 'allowed_values_function' => '',
             ),

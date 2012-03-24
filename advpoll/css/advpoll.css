@@ -49,3 +49,16 @@ td.poll-chtext {
 td.poll-chvotes .form-text {
   width: 85%;
 }
+
+.advpoll-write-in {
+    position: relative;
+    width: 375px;
+}
+
+.advpoll-write-in .form-item {
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    top: -18px;
+    left: 18px;
+}

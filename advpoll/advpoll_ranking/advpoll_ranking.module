@@ -2,6 +2,119 @@
 
 /*
  * @file
- * Advanced Poll Module 2/29/2012 MW
+ * Advanced Ranking Poll Module 2/29/2012 MW
  */
 
+// from http://api.drupal.org/api/drupal/modules!field!field.crud.inc/function/field_create_field/7#comment-19499
+function advpoll_ranking_enable() {
+    $t = get_t();
+    $field_name = 'advpoll_type';
+    
+    if (!field_info_field($field_name)) {
+        $field = array(
+            'active' => '1',
+            'cardinality' => '1',
+            'deleted' => '0',
+            'entity_types' => array(),
+            'field_name' => $field_name,
+            'foreign keys' => array(),
+            'indexes' => array(
+                'value' => array(
+                    0 => 'value',
+                ),
+            ),
+            'module' => 'list',
+            'settings' => array(
+                'allowed_values' => array(
+                    'normal' => $t('Normal poll'),
+                    'ranking' => $t('Ranking poll'),
+                ),
+                'allowed_values_function' => '',
+            ),
+            'translatable' => '0',
+            'type' => 'list_text',
+        );
+        
+        field_create_field($field);
+        
+        $instance = array(
+             'default_value' => array(
+                0 => array(
+                    'value' => 'normal',
+                ),
+            ),
+            'bundle' => 'advpoll',
+            'deleted' => '0',
+            'description' => $t('Select what type of poll you would like to present.'),
+            'display' => array(
+                'default' => array(
+                    'label' => 'hidden',
+                    'module' => 'list',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 6,
+                ),
+                'example_node_list' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+                'teaser' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+            ),
+            'entity_type' => 'node',
+            'field_name' => $field_name,
+            'label' => $t('Type of poll'),
+            'required' => 1,
+            'settings' => array(
+                'user_register_form' => FALSE,
+            ),
+            'widget' => array(
+                'active' => 1,
+                'module' => 'options',
+                'settings' => array(),
+                'type' => 'options_buttons',
+                'weight' => '1',
+            ),
+           
+        );
+        field_create_instance($instance);
+    }
+}
+
+function advpoll_ranking_form_alter (&$form, $form_state, $form_id) {
+    if ($form_id == 'advpoll_node_form') {
+        $rankingOptions = array('borda' => t('Borda Count'), 'runoff' => t('Instant run-off'));
+        $normalOptions = array('approval' => t('Approval voting'), 'pool' => t('Pool votes and choices'));
+        $language = $form['advpoll_type']['#language'];
+        
+        $selected = isset($form_state['values']['advpoll_type']);
+
+        if ($selected) {
+            if ($form_state['values']['advpoll_type'][$language][0]['value'] === 'ranking') {
+                $form['advpoll_behavior'][$language]['#options'] = $rankingOptions;
+                $form['advpoll_behavior'][$language]['#default_value'] = 'borda';
+            } else {
+                $form['advpoll_behavior'][$language]['#options'] = $normalOptions;                
+                $form['advpoll_behavior'][$language]['#default_value'] = 'approval';
+            }
+        }
+        
+        $form['advpoll_type']['und']['#ajax'] = array(
+            'callback' => 'advpoll_ranking_callback',
+            'wrapper' => 'advpoll_ranking_replace_options',
+        );
+        
+        $form['advpoll_behavior'][$language]['#prefix'] = '<div id="advpoll_ranking_replace_options">';
+        $form['advpoll_behavior'][$language]['#suffix'] = '</div>';
+    }
+}
+
+function advpoll_ranking_callback ($form, $form_state) {
+    return $form['advpoll_behavior'];
+}

@@ -100,7 +100,7 @@ function advpoll_clear_votes_form($form, &$form_state) {
         '#value' => t('Clear all votes'),
         '#type' => 'submit',
     );
-    $form['#action'] = url('node/' . $nid . '/votes/clear');
+    $form['#action'] = url('node/' . $nid . '/advpoll/votes/clear');
     return $form;
 }
 
@@ -334,7 +334,7 @@ function advpoll_clear_votes_confirm_form($form, &$form_state, $nid, $title) {
     $form['#nid'] = $nid;
     $confirm_question = t('Are you sure you want to clear all votes for %title?', array('%title' => $title));
     $form['question'] = array('#value' => '<h2>' . $confirm_question . '</h2>');
-    $form = confirm_form($form, $confirm_question, 'node/' . $nid . '/votes', t('This will delete all votes that have been cast for %title.', array('%title' => $title)), t('Clear all votes'), t('Cancel'));
+    $form = confirm_form($form, $confirm_question, 'node/' . $nid . '/admin/votes', t('This will delete all votes that have been cast for %title.', array('%title' => $title)), t('Clear all votes'), t('Cancel'));
     unset($form['#theme']);
     return $form;
 }

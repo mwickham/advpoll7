@@ -1,8 +1,6 @@
 name = Advanced Ranking Poll
-description = "Allows creation of standard and borda count style polls with the option to create write-ins.  It takes advantage of the Voting API to track votes with the option to use cookies instead of IP/Authenticated user ids."
+description = "Allows creation of instant run-off and borda count style polls with the option to create write-in functionality by extending the functionality of Advanced Poll."
 dependencies[] = advpoll
-dependencies[] = votingapi
-dependencies[] = date
-dependencies[] = date_popup
+
 core = 7.x
 package = "Voting"

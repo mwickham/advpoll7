@@ -9,11 +9,15 @@
  * - $percentage: The percentage of votes for this choice.
  * - $vote: The choice number of the current user's vote.
  * - $voted: Set to TRUE if the user voted for this choice.
- *
- * @see template_preprocess_poll_bar()
  */
+
+// add extra class to wrapper so that user's selected vote can have a different style.
+$voted_class = '';
+if ($voted) {
+    $voted_class = ' voted';
+}
 ?>
-<div class="poll">
+<div class="poll-bar<?php print $voted_class; ?>">
   <div class="text"><?php print $title; ?></div>
   <div class="bar">
     <div style="width: <?php print $percentage; ?>%;" class="foreground"></div>
