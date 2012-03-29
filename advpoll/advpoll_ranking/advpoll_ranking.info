@@ -1,5 +1,5 @@
 name = Advanced Ranking Poll
-description = "Allows creation of instant run-off and borda count style polls with the option to create write-in functionality by extending the functionality of Advanced Poll."
+description = "Extends the functionality of Advanced Poll with borda and instant run-off style polling."
 dependencies[] = advpoll
 
 core = 7.x

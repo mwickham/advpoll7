@@ -62,3 +62,72 @@ td.poll-chvotes .form-text {
     top: -18px;
     left: 18px;
 }
+
+.advpoll-ranking-wrapper ul.selectable-list {
+    margin: 0;
+    padding: 0;
+    float: left;
+    width: 50%;
+}
+
+.advpoll-ranking-wrapper .advpoll-vote-region {
+    width: 45%;
+    float: right;
+}
+
+.advpoll-ranking-wrapper #message {
+    clear: both;
+}
+
+.advpoll-ranking-wrapper .tabledrag-toggle-weight-wrapper {
+    display: none;
+}
+#advpolltable tbody {
+    margin: 5px;
+    padding-bottom: 0;
+    background-color: #eee;
+    text-align: left;
+    
+}
+
+#advpolltable thead th {
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+    background-color: transparent;
+}
+
+#advpolltable thead tr {
+    background: none transparent;
+}
+
+#advpolltable tfoot td {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+#advpolltable tfoot tr {
+    background: transparent;
+    
+}
+
+#advpolltable tfoot .form-submit {
+    margin: 0;
+}
+
+.advpoll-ranking-wrapper li a {
+    float: right;
+}
+
+#advpolltable td {
+    border: none;
+}
+
+#advpolltable td .form-item label {
+    display: block;
+    padding: 0;
+    margin: 0;
+    width: 250px;
+}

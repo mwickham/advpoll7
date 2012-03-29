@@ -44,6 +44,11 @@ function advpoll_install() {
         'custom' => TRUE,
     );
 
+    $behaviors = array( 'approval' => $t('Approval voting'),
+                        'pool' => $t('Pool votes and choices'),
+                      );
+    variable_set('advpoll_behaviors', $behaviors);
+    
     // Complete the node type definition by setting any defaults not explicitly
     // declared above.
     // http://api.drupal.org/api/function/node_type_set_defaults/7
@@ -105,6 +110,8 @@ function advpoll_uninstall() {
     foreach ($result as $row) {
         $nids[] = $row->nid;
     }
+    
+    variable_del('advpoll_behaviors');
 
     // Delete all the nodes at once
     // http://api.drupal.org/api/function/node_delete_multiple/7
@@ -149,6 +156,7 @@ function advpoll_uninstall() {
 function _advpoll_installed_fields() {
     $t = get_t();
     return array(
+        // -- Choices field --
         'advpoll_choice' => array(
             'active' => '1',
             'cardinality' => '-1',
@@ -166,6 +174,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'advpoll',
         ),
+        // -- Max number of choices field
         'advpoll_max_choices' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -179,6 +188,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'number_integer',
         ),
+        // -- Poll behavior field
         'advpoll_behavior' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -202,6 +212,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'list_text',
         ),
+        // -- Poll closed field
         'advpoll_closed' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -225,6 +236,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'list_text',
         ),
+        // -- Cookie duration field
         'advpoll_cookie_duration' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -238,6 +250,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'number_integer',
         ),
+        // Poll date field
         'advpoll_dates' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -265,6 +278,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'datetime',
         ),
+        // Poll mode field
         'advpoll_mode' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -289,6 +303,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'list_text',
         ),
+        // Poll options field
         'advpoll_options' => array(
             'active' => '1',
             'cardinality' => '4',
@@ -314,6 +329,7 @@ function _advpoll_installed_fields() {
             'translatable' => '0',
             'type' => 'list_text',
         ),
+        // -- Poll Results field
         'advpoll_results' => array(
             'active' => '1',
             'cardinality' => '1',
@@ -362,6 +378,7 @@ function _advpoll_installed_fields() {
 function _advpoll_installed_instances() {
     $t = get_t();
     return array(
+        // -- Choices field instance display info
         'advpoll_choice' => array(
             'default_value' => NULL,
             'deleted' => '0',
@@ -398,9 +415,10 @@ function _advpoll_installed_instances() {
                 'module' => 'advpoll_field',
                 'settings' => array(),
                 'type' => 'advpoll_write_in',
-                'weight' => '2',
+                'weight' => '1',
             ),
         ),
+        // -- Max choices instance display
         'advpoll_max_choices' => array(
             'default_value' => array(
                 0 => array(
@@ -451,150 +469,10 @@ function _advpoll_installed_instances() {
                 'module' => 'number',
                 'settings' => array(),
                 'type' => 'number',
-                'weight' => '3',
+                'weight' => '2',
             ),
         ),
-        'advpoll_behavior' => array(
-            'default_value' => array(
-                0 => array(
-                    'value' => 'approval',
-                ),
-            ),
-            'deleted' => '0',
-            'description' => $t('Approval voting weighs each vote against each individual choice rather than pooling all votes.'),
-            'display' => array(
-                'default' => array(
-                    'label' => 'hidden',
-                    'module' => 'list',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 7,
-                ),
-                'example_node_list' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-                'teaser' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-            ),
-            'entity_type' => 'node',
-            'field_name' => 'advpoll_behavior',
-            'label' => $t('Voting behavior'),
-            'required' => 1,
-            'settings' => array(
-                'user_register_form' => FALSE,
-            ),
-            'widget' => array(
-                'active' => 1,
-                'module' => 'options',
-                'settings' => array(),
-                'type' => 'options_buttons',
-                'weight' => '9',
-            ),
-        ),
-        'advpoll_closed' => array(
-            'default_value' => array(
-                0 => array(
-                    'value' => 'open',
-                ),
-            ),
-            'deleted' => '0',
-            'description' => $t('When closed, a poll may no longer be voted upon but will display its results if settings allow.  For blocks, polls that are enabled to show results will show results, otherwise the block will no longer be available.'),
-            'display' => array(
-                'default' => array(
-                    'label' => 'hidden',
-                    'module' => 'list',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 6,
-                ),
-                'example_node_list' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-                'teaser' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-            ),
-            'entity_type' => 'node',
-            'field_name' => 'advpoll_closed',
-            'label' => $t('Close poll'),
-            'required' => 1,
-            'settings' => array(
-                'user_register_form' => FALSE,
-            ),
-            'widget' => array(
-                'active' => 1,
-                'module' => 'options',
-                'settings' => array(),
-                'type' => 'options_buttons',
-                'weight' => '5',
-            ),
-        ),
-        'advpoll_cookie_duration' => array(
-            'default_value' => array(
-                0 => array(
-                    'value' => '60',
-                ),
-            ),
-            'deleted' => '0',
-            'description' => $t('If the poll\'s voting availability is being controlled by a cookie, this value determine how long to wait between votes in minutes.'),
-            'display' => array(
-                'default' => array(
-                    'label' => 'hidden',
-                    'module' => 'number',
-                    'settings' => array(
-                        'decimal_separator' => '.',
-                        'prefix_suffix' => TRUE,
-                        'scale' => 0,
-                        'thousand_separator' => ' ',
-                    ),
-                    'type' => 'hidden',
-                    'weight' => 8,
-                ),
-                'example_node_list' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-                'teaser' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-            ),
-            'entity_type' => 'node',
-            'field_name' => 'advpoll_cookie_duration',
-            'label' => $t('Cookie duration'),
-            'required' => 0,
-            'settings' => array(
-                'max' => '',
-                'min' => '1',
-                'prefix' => '',
-                'suffix' => '',
-                'user_register_form' => FALSE,
-            ),
-            'widget' => array(
-                'active' => 0,
-                'module' => 'number',
-                'settings' => array(),
-                'type' => 'number',
-                'weight' => '10',
-            ),
-        ),
+        // -- Date fields instance display
         'advpoll_dates' => array(
             'deleted' => '0',
             'description' => $t('Select the date range that controls the availability of this poll.'),
@@ -648,24 +526,25 @@ function _advpoll_installed_instances() {
                     'year_range' => '-0:+1',
                 ),
                 'type' => 'date_popup',
-                'weight' => '4',
+                'weight' => '3',
             ),
-        ),
-        'advpoll_mode' => array(
+        ),        
+        // Open/Closed field instance display
+        'advpoll_closed' => array(
             'default_value' => array(
                 0 => array(
-                    'value' => 'normal',
+                    'value' => 'open',
                 ),
             ),
             'deleted' => '0',
-            'description' => $t('Warning, changing this setting after votes have already been recorded for this poll will cause existing votes to be flushed.'),
+            'description' => $t('When closed, a poll may no longer be voted upon but will display its results if settings allow.  For blocks, polls that are enabled to show results will show results, otherwise the block will no longer be available.'),
             'display' => array(
                 'default' => array(
                     'label' => 'hidden',
                     'module' => 'list',
                     'settings' => array(),
                     'type' => 'hidden',
-                    'weight' => 4,
+                    'weight' => 6,
                 ),
                 'example_node_list' => array(
                     'label' => 'above',
@@ -681,8 +560,8 @@ function _advpoll_installed_instances() {
                 ),
             ),
             'entity_type' => 'node',
-            'field_name' => 'advpoll_mode',
-            'label' => $t('Vote storage mode'),
+            'field_name' => 'advpoll_closed',
+            'label' => $t('Close poll'),
             'required' => 1,
             'settings' => array(
                 'user_register_form' => FALSE,
@@ -692,9 +571,10 @@ function _advpoll_installed_instances() {
                 'module' => 'options',
                 'settings' => array(),
                 'type' => 'options_buttons',
-                'weight' => '7',
+                'weight' => '4',
             ),
         ),
+        // Options fields display instance
         'advpoll_options' => array(
             'default_value' => array(
                 0 => array(
@@ -736,9 +616,109 @@ function _advpoll_installed_instances() {
                 'module' => 'options',
                 'settings' => array(),
                 'type' => 'options_buttons',
+                'weight' => '5',
+            ),
+        ),        
+        // Mode field instance display
+        'advpoll_mode' => array(
+            'default_value' => array(
+                0 => array(
+                    'value' => 'normal',
+                ),
+            ),
+            'deleted' => '0',
+            'description' => $t('Warning, changing this setting after votes have already been recorded for this poll will cause existing votes to be flushed.'),
+            'display' => array(
+                'default' => array(
+                    'label' => 'hidden',
+                    'module' => 'list',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 4,
+                ),
+                'example_node_list' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+                'teaser' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+            ),
+            'entity_type' => 'node',
+            'field_name' => 'advpoll_mode',
+            'label' => $t('Vote storage mode'),
+            'required' => 1,
+            'settings' => array(
+                'user_register_form' => FALSE,
+            ),
+            'widget' => array(
+                'active' => 1,
+                'module' => 'options',
+                'settings' => array(),
+                'type' => 'options_buttons',
                 'weight' => '6',
             ),
         ),
+        // Cookie duration field
+        'advpoll_cookie_duration' => array(
+            'default_value' => array(
+                0 => array(
+                    'value' => '60',
+                ),
+            ),
+            'deleted' => '0',
+            'description' => $t('If the poll\'s voting availability is being controlled by a cookie, this value determine how long to wait between votes in minutes.'),
+            'display' => array(
+                'default' => array(
+                    'label' => 'hidden',
+                    'module' => 'number',
+                    'settings' => array(
+                        'decimal_separator' => '.',
+                        'prefix_suffix' => TRUE,
+                        'scale' => 0,
+                        'thousand_separator' => ' ',
+                    ),
+                    'type' => 'hidden',
+                    'weight' => 8,
+                ),
+                'example_node_list' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+                'teaser' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+            ),
+            'entity_type' => 'node',
+            'field_name' => 'advpoll_cookie_duration',
+            'label' => $t('Cookie duration'),
+            'required' => 0,
+            'settings' => array(
+                'max' => '',
+                'min' => '1',
+                'prefix' => '',
+                'suffix' => '',
+                'user_register_form' => FALSE,
+            ),
+            'widget' => array(
+                'active' => 0,
+                'module' => 'number',
+                'settings' => array(),
+                'type' => 'number',
+                'weight' => '7',
+            ),
+        ),        
+        // Results field display instance
         'advpoll_results' => array(
             'default_value' => array(
                 0 => array(
@@ -783,5 +763,50 @@ function _advpoll_installed_instances() {
                 'weight' => '8',
             ),
         ),
+        // Poll behavior field        
+        'advpoll_behavior' => array(
+            'default_value' => array(
+                0 => array(
+                    'value' => 'approval',
+                ),
+            ),
+            'deleted' => '0',
+            'description' => $t('Approval voting weighs each vote against each individual choice rather than pooling all votes.'),
+            'display' => array(
+                'default' => array(
+                    'label' => 'hidden',
+                    'module' => 'list',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 7,
+                ),
+                'example_node_list' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+                'teaser' => array(
+                    'label' => 'above',
+                    'settings' => array(),
+                    'type' => 'hidden',
+                    'weight' => 0,
+                ),
+            ),
+            'entity_type' => 'node',
+            'field_name' => 'advpoll_behavior',
+            'label' => $t('Voting behavior'),
+            'required' => 1,
+            'settings' => array(
+                'user_register_form' => FALSE,
+            ),
+            'widget' => array(
+                'active' => 1,
+                'module' => 'options',
+                'settings' => array(),
+                'type' => 'options_buttons',
+                'weight' => '10',
+            ),
+        ),        
     );
 }

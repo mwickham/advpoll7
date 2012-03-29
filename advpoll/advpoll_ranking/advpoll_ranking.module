@@ -5,116 +5,124 @@
  * Advanced Ranking Poll Module 2/29/2012 MW
  */
 
-// from http://api.drupal.org/api/drupal/modules!field!field.crud.inc/function/field_create_field/7#comment-19499
-function advpoll_ranking_enable() {
-    $t = get_t();
-    $field_name = 'advpoll_type';
-    
-    if (!field_info_field($field_name)) {
-        $field = array(
-            'active' => '1',
-            'cardinality' => '1',
-            'deleted' => '0',
-            'entity_types' => array(),
-            'field_name' => $field_name,
-            'foreign keys' => array(),
-            'indexes' => array(
-                'value' => array(
-                    0 => 'value',
-                ),
-            ),
-            'module' => 'list',
-            'settings' => array(
-                'allowed_values' => array(
-                    'normal' => $t('Normal poll'),
-                    'ranking' => $t('Ranking poll'),
-                ),
-                'allowed_values_function' => '',
-            ),
-            'translatable' => '0',
-            'type' => 'list_text',
-        );
-        
-        field_create_field($field);
-        
-        $instance = array(
-             'default_value' => array(
-                0 => array(
-                    'value' => 'normal',
-                ),
-            ),
-            'bundle' => 'advpoll',
-            'deleted' => '0',
-            'description' => $t('Select what type of poll you would like to present.'),
-            'display' => array(
-                'default' => array(
-                    'label' => 'hidden',
-                    'module' => 'list',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 6,
-                ),
-                'example_node_list' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-                'teaser' => array(
-                    'label' => 'above',
-                    'settings' => array(),
-                    'type' => 'hidden',
-                    'weight' => 0,
-                ),
-            ),
-            'entity_type' => 'node',
-            'field_name' => $field_name,
-            'label' => $t('Type of poll'),
-            'required' => 1,
-            'settings' => array(
-                'user_register_form' => FALSE,
-            ),
-            'widget' => array(
-                'active' => 1,
-                'module' => 'options',
-                'settings' => array(),
-                'type' => 'options_buttons',
-                'weight' => '1',
-            ),
-           
-        );
-        field_create_instance($instance);
-    }
-}
-
-function advpoll_ranking_form_alter (&$form, $form_state, $form_id) {
-    if ($form_id == 'advpoll_node_form') {
-        $rankingOptions = array('borda' => t('Borda Count'), 'runoff' => t('Instant run-off'));
-        $normalOptions = array('approval' => t('Approval voting'), 'pool' => t('Pool votes and choices'));
-        $language = $form['advpoll_type']['#language'];
-        
-        $selected = isset($form_state['values']['advpoll_type']);
-
-        if ($selected) {
-            if ($form_state['values']['advpoll_type'][$language][0]['value'] === 'ranking') {
-                $form['advpoll_behavior'][$language]['#options'] = $rankingOptions;
-                $form['advpoll_behavior'][$language]['#default_value'] = 'borda';
+function advpoll_ranking_node_view($node, $view_mode) {
+    if ($node->type == 'advpoll') {
+        $data = advpoll_get_data($node);
+        if ($data->behavior == 'borda' || $data->behavior == 'runoff') {
+            drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+            drupal_add_js('/' . drupal_get_path('module', 'advpoll_ranking') . '/js/advpoll-ranking.js', 'external');
+            // replace the markup for choices with appropriate markup.
+            unset($node->content['advpoll_choice']);
+            // check for eligibility to vote
+            if (advpoll_user_eligibility($node)) {
+                // print out voting form
+                $voteform = '<div class="advpoll-ranking-wrapper">' . drupal_render(drupal_get_form('advpoll_ranking_choice_form', $node)) . '</div>';
+                $node->content['advpoll_choice'] = array('#markup' => $voteform, '#weight' => 1);
             } else {
-                $form['advpoll_behavior'][$language]['#options'] = $normalOptions;                
-                $form['advpoll_behavior'][$language]['#default_value'] = 'approval';
+                // get user's votes if they're logged in and if voting is normal
+                $votes = array();
+                if ($data->mode == 'normal') {
+                    $votes = advpoll_get_user_votes($node->nid, $node->type);
+                }
+                // Depending upon the reasons that the user is ineligible to vote, 
+                // select the appropriate theme.
+                if (($data->state == 'close' && $data->show_results != 'afterclose') || ($data->start_date > time() || $data->end_date < time())) {
+                    $results = theme('advpoll_closed', array('data' => $data));
+                } else if ($data->electoral && $data->show_results != 'aftervote') {
+                    $results = theme('advpoll_ineligible', array('data' => $data));
+                } else {
+                    $results = advpoll_display_results($node->type, $node->nid, $data);
+                }
+                $node->content['advpoll_choice'] = array('#markup' => $results, '#weight' => 1);
             }
         }
-        
-        $form['advpoll_type']['und']['#ajax'] = array(
-            'callback' => 'advpoll_ranking_callback',
-            'wrapper' => 'advpoll_ranking_replace_options',
-        );
-        
-        $form['advpoll_behavior'][$language]['#prefix'] = '<div id="advpoll_ranking_replace_options">';
-        $form['advpoll_behavior'][$language]['#suffix'] = '</div>';
     }
 }
 
-function advpoll_ranking_callback ($form, $form_state) {
-    return $form['advpoll_behavior'];
+function advpoll_ranking_choice_form($form, &$form_state, $values) {
+    $data = advpoll_get_data($values);
+    $count = count($data->choices);
+    $ranking = array('--', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th');
+    $options = array();
+    $id = floor(rand(1, 5) * time() / 1000);
+
+    $form['#id'] = 'advpoll-ranking-form-' . $id . '-' . $values->nid;
+    $form['choice'] = array('#tree' => TRUE);
+
+    for ($i = 0; $i < $count; $i++) {
+
+        $form['choice'][$i] = array(
+            '#type' => 'select',
+            '#title' => strip_tags($data->choices[$i]['choice']),
+            '#options' => $ranking,
+        );
+    }
+
+    if ($data->write_in) {
+        $form['write_in'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Write-in'),
+            '#size' => '30'
+        );
+        $form['write_in_weight'] = array(
+            '#type' => 'hidden',
+            '#default_value' => 0,
+        );
+    }
+    
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#ajax' => array(
+            'callback' => 'advpoll_ranking_submit',
+            'wrapper' => 'advpoll-ranking-form-' . $id . '-' . $values->nid,
+            'name' => 'submit1',
+        ),
+        '#value' => t('Vote'),
+    );
+
+    $rows = '';
+    for ($i = 0; $i < $data->max_choices; $i++) {
+        $rows .= '<tr  class="draggable"><td class="advpoll-weight item-' . $i . '"></td></tr>';
+    }
+    $form['advpoll-table'] = array(
+        '#type' => 'item',
+        '#prefix' => '<div class="advpoll-vote-region">',
+        '#suffix' => '</div>',
+        '#markup' => '<table id="advpolltable"><thead><tr><th>' . t('Your Vote') . '</th></tr><tbody>' . $rows . '</tbody></table>',
+    );
+    drupal_add_tabledrag('advpolltable', 'match', 'sibling', 'advpoll-weight');
+    return $form;
+}
+
+function advpoll_ranking_submit($form, &$form_state) {
+    $data = advpoll_get_form_data($form_state);
+    $count = count($data->choices);
+    $votes = $form[$count]['#value'];
+    $nid = $form_state['build_info']['args'][0]->nid;
+    $type = $form_state['build_info']['args'][0]->type;
+    $writein = '';
+
+    // check to see if a write-in exists and was filled in.
+    if ($data->write_in) {
+
+        if (isset($form_state['values']['write_in'])) {
+            $writein = $form_state['values']['write_in'];
+
+            // sanitize and check to see if there's a valid write in afterward
+            $writein = trim(strip_tags($writein));
+            $writein = check_plain($writein);
+
+            if ($writein) {
+                $data->choices[] = advpoll_process_writein($nid, $writein, $data);
+            } else {
+                $form['message'] = array(
+                    '#type' => 'markup',
+                    '#prefix' => '<div id="message">',
+                    '#suffix' => '</div>',
+                    '#markup' => t('Please type in a valid write-in choice or select a different option.'),
+                );
+                return $form;
+            }
+        }
+    }
 }

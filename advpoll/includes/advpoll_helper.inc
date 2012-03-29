@@ -37,7 +37,7 @@
 function advpoll_get_data($node) {
     $data = array();
     $lang = $node->language;
-
+    
     if ($node->type == 'advpoll') {
         $options = $node->advpoll_options[$lang];        
         $data['choices'] = $node->advpoll_choice[$lang];
