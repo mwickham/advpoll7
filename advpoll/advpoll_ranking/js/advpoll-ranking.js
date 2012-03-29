@@ -1,6 +1,6 @@
 /* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Advanced Ranking Poll
+ * Handles behavior of Ranking polls.
  */
 
 (function ($) {
@@ -9,10 +9,10 @@
     
     Drupal.behaviors.advpollModule = {
         attach: function (context, settings) {
-            // only rebuild if it doesn't exist - ajax calls/validation require this to be refreshed now and then'
+            // only rebuild draggable form if it doesn't yet exist'
             if ($('ul.selectable-list').length < 1) {
                 currentIndex = 0;
-                //  $('.advpoll-ranking-wrapper select').css('display', 'none');
+                $('.advpoll-ranking-wrapper select').css('display', 'none');
                 $('.advpoll-ranking-wrapper input.form-text').css('display', 'none');
                 $('.advpoll-ranking-wrapper label').append('<a href="" class="vote add">'+Drupal.t('Add')+' ></a>');
                 $('.advpoll-ranking-wrapper .form-type-select').wrap('<li class="selectable" />');
@@ -24,14 +24,17 @@
                     $(this).data('index', index);
                 });                              
                 
+                // how many possible choices can user make?
                 totalItems = $('#advpolltable tbody tr').length;
                 
+                // these calls are checking to see if form has been returned with selected
+                // values - need to place them back into the list in the right order if so.
                 $('.advpoll-ranking-wrapper ul.selectable-list li').each(function(index) {
                     if($(this).find('select').length) {
                         var select = $(this).find('select');
                         var selected = $("#"+select.attr('id')+" option[selected = selected]");
                         
-                        if (selected.length) {
+                        if (select && selected.length) {
                             if (selected.val() > 0) {
                                 var element = $(selected).parents('li');
                                 $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
@@ -39,8 +42,20 @@
                                 $('#advpolltable tbody tr').eq(selected.val()-1).css('display', 'block');
                                 currentIndex++;
                             }
+                        } 
+                    } else {
+                            
+                        var input = $("input[name='write_in_weight']").attr('value');
+                        if (input > 0) {
+                            var element = $('.advpoll-ranking-wrapper ul.selectable-list li .form-item-write-in');
+                            element = element.parents('li');
+                            $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
+                            $('#advpolltable tbody td').eq(input-1).append(element);
+                            $('#advpolltable tbody tr').eq(input-1).css('display', 'block');
+                            currentIndex++;
+                                
                         }
-                    }
+                    }                    
                 });
                 
                 
@@ -65,19 +80,17 @@
 
             }
             
-        }
-        
-        
-        
-       
+        }       
     };
     
+    // called when an item is added or removed from the list or upon initialization
     Drupal.advpollUpdateEvents =  function () {
         Drupal.advpollRemoveEvents();
         $('.advpoll-ranking-wrapper ul.selectable-list li a.add').bind('click', function(){
             var element = $(this).parents('li');
-            $(this).removeClass('add').addClass('remove').html('(x)');
-            console.log(currentIndex);
+            if (currentIndex < totalItems) {
+                $(this).removeClass('add').addClass('remove').html('(x)');
+            }
             $('#advpolltable tbody td').eq(currentIndex).append(element);
             $('#advpolltable tbody tr').eq(currentIndex).css('display', 'block');
             Drupal.advpollUpdateEvents();
@@ -94,6 +107,7 @@
             
             $("#"+select.attr('id')+" option[value='0']").attr('selected', 'selected');
             currentIndex--;
+            // items are removed so reweight them in the list.
             Drupal.advpollReorderChoices();
             Drupal.advpollUpdateEvents();
             return false;
@@ -101,7 +115,8 @@
         
         
     }
-       
+
+    // called when items are dragged in selected list.
     Drupal.advpollReorderChoices = function() {
         var choices = [];
         
@@ -113,13 +128,15 @@
             $('#advpolltable tbody td').eq(i).append(choices[i]);
         }
     }
-       
+    
+    // Called to ensure that we never bind the click events multiple times.
     Drupal.advpollRemoveEvents =  function () {
         $('.advpoll-ranking-wrapper ul.selectable-list li a.add').unbind('click');
         $('.advpoll-ranking-wrapper td a.remove').unbind('click');
         Drupal.advpollUpdateSelect();
     }
    
+    // Update markup and field values when items are rearranged.
     Drupal.advpollUpdateSelect = function() {
         $('#advpolltable tbody tr').each(function(index) {
             if ($(this).find('select').length) {
@@ -140,6 +157,13 @@
         if ($('.advpoll-ranking-wrapper ul.selectable-list li input').length) {
             $('.advpoll-ranking-wrapper ul.selectable-list li input').css('display', 'none');
             $("input[name='write_in_weight']").attr('value', 0);
+        }
+        
+        // if the user has selected the maximum number of votes, hide the add buttons
+        if ($('#advpolltable tbody li').length >= totalItems) {
+            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('display', 'none');
+        } else {
+            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('display', 'block');            
         }
     }
    
