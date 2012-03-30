@@ -102,8 +102,9 @@ function advpoll_field_field_widget_form(&$form, &$form_state, $field, $instance
         '#title' => t('Write-in (When checked, item will not be displayed for voting until unchecked.)'),
         '#default_value' => empty($items[$delta]['write_in']) ? 0 : 1,
       );
-      $default =  dechex(time());
-      // decided to hex current time for a smaller value to stick into votingapi tag field.
+      $default =  dechex(time() * rand(5, 50));
+      // decided to hex for a smaller value to stick into votingapi tag field. Added a randomized
+      // multiplier to make absolutely sure value is unique if choices are created at the same time.
       $element['choice_id'] = array(
         '#type' => 'hidden',
         '#default_value' => empty($items[$delta]['choice_id']) ? $default : $items[$delta]['choice_id'],

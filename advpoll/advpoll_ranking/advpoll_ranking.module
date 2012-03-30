@@ -51,6 +51,133 @@ function advpoll_ranking_node_view($node, $view_mode) {
 }
 
 /**
+ * Implements hook_menu_alter().
+ *
+ * Alters output of the Vote inspection page.
+ */
+function advpoll_ranking_menu_alter(&$items) {
+    $items['node/%node/advpoll/votes']['page callback'] = 'advpoll_ranking_votes_page';
+}
+
+/**
+ * Display the overridden votes page.
+ * */
+function advpoll_ranking_votes_page($node) {
+    return '<h2>this is working</h2>';
+    /*
+    drupal_set_title(check_plain($node->title));
+
+    if ($node->show_votes || user_access('administer polls')) {
+        $output = t('This table lists all the recorded votes for this poll. If anonymous users are allowed to vote, they will be identified by the IP address of the computer they used when they voted.');
+
+        $header[] = array('data' => t('Visitor'), 'field' => 'u.name');
+        $header[] = array('data' => t('Date'), 'field' => 'v.timestamp');
+        $header[] = array('data' => t('Vote'), '');
+
+        // added pager query because of pre-grouping as an intermediate fix.
+        $result = pager_query("
+      SELECT v.uid, v.vote_source, v.timestamp, u.name
+      FROM {votingapi_vote} v
+      LEFT JOIN {users} u
+        ON v.uid = u.uid
+      WHERE v.content_type = 'advpoll'
+        AND v.content_id = %d
+      GROUP BY v.uid, v.vote_source, v.timestamp, u.name"
+                . tablesort_sql($header), 20, 0, "
+      SELECT COUNT( DISTINCT v.uid, v.vote_source, v.timestamp, u.name )
+      FROM {votingapi_vote} v
+      LEFT JOIN {users} u
+        ON v.uid = u.uid
+      WHERE v.content_type = 'advpoll'
+        AND v.content_id =%d", $node->nid
+        );
+
+        $uids = array();
+        $hostnames = array();
+        $timestamp = array();
+        while ($vote = db_fetch_object($result)) {
+            $uids[$vote->uid] = $vote->uid;
+            $hostnames[$vote->vote_source] = $vote->vote_source;
+            $timestamps[$vote->timestamp] = $vote->timestamp;
+        }
+
+        $rows = array();
+        if (count($uids) > 0) {
+            // Use db_query()'s placeholder syntax to prevent any potential SQL
+            // injection attacks.
+            $uid_placeholders = array_fill(0, count($uids), '%d');
+            $host_placeholders = array_fill(0, count($hostnames), "'%s'");
+            $time_placeholders = array_fill(0, count($timestamps), '%d');
+
+            // Here we have to select votes based on their uid+hostname+timestamp
+            // combination because there no unique id for the set of rankings that
+            // corresponds to a user's full vote on a given poll.
+            $query = "
+        SELECT v.vote_id, v.tag, v.uid, v.vote_source, v.timestamp, v.value, u.name
+        FROM {votingapi_vote} v
+        LEFT JOIN {users} u
+          ON v.uid = u.uid
+        WHERE v.content_id = %d
+          AND v.uid IN(" . implode(', ', $uid_placeholders) . ")
+          AND v.vote_source IN(" . implode(', ', $host_placeholders) . ")
+          AND v.timestamp IN(" . implode(', ', $time_placeholders) . ")"
+                    . tablesort_sql($header);
+            $parameters = array_merge(array($query, $node->nid), array_values($uids), array_values($hostnames), array_values($timestamps));
+            $result = call_user_func_array('db_query', $parameters);
+            while ($vote = db_fetch_object($result)) {
+                $key = $vote->uid ? $vote->uid : $vote->vote_source . '-' . $vote->timestamp;
+                $rows[$key]['name'] = $vote->name ? theme('username', $vote) : check_plain($vote->vote_source);
+                $rows[$key]['timestamp'] = $vote->timestamp;
+                if ($node->type == 'advpoll_ranking') {
+                    // Need two dimensional results (if equal rankings are allowed).
+                    $rows[$key]['votes'][$vote->value][] = _advpoll_choice_markup($node->choice[$vote->tag]['label'], $node->format, FALSE);
+                } else {
+                    // Just need one dimensional results.
+                    $rows[$key]['votes'][] = _advpoll_choice_markup($node->choice[$vote->tag]['label'], $node->format, FALSE);
+                }
+            }
+        }
+
+        $separators = array('advpoll_ranking' => ' > ', 'advpoll_binary' => ', ');
+
+        // Create strings out of each vote.
+        $results = array();
+
+        foreach ($rows as $key => $container) {
+            $ranking = $container['votes'];
+            asort($ranking);
+            $rankings = array();
+            if ($node->type == 'advpoll_ranking') {
+                // Include support for multiple choices having the same ranking.
+                foreach ($ranking as $vote => $choices) {
+                    $rankings[$vote] = implode(' = ', $choices);
+                }
+            } else {
+                // Just copy the previous array.
+                $rankings = $ranking;
+            }
+            ksort($rankings);
+            $results[$key]['name'] = $rows[$key]['name'];
+            $results[$key]['timestamp'] = format_date($rows[$key]['timestamp'], 'small');
+            $results[$key]['vote'] = implode($separators[$node->type], $rankings);
+        }
+
+        $output .= theme('table', $header, $results);
+        $output .= theme('pager', NULL, 20, 0);
+    } else {
+        $output = '<div class="advpoll-cant-show-votes">' . t('This poll is configured to not display individual votes.') . '</div>';
+    }
+
+    // Only display the button if the user has access.
+    if (_advpoll_clear_votes_access($node)) {
+        $output .= drupal_get_form('advpoll_clear_votes_form', $node->nid);
+    }
+    print theme('page', $output);
+*/
+
+}
+
+/**
  * Implements hook_theme().
  *
  * Theme elements used by Advanced Ranking Poll.
@@ -64,6 +191,10 @@ function advpoll_ranking_theme($existing, $type, $theme, $path) {
         ),
     );
 }
+
+/*
+ * form view for ranking forms used in Borda and Instant Run-off
+ */
 
 function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $data = advpoll_get_data($values);
@@ -218,6 +349,7 @@ function advpoll_ranking_submit($form, &$form_state) {
 /*
  * Add votes for tallying by value.
  */
+
 function advpoll_ranking_process_votes($data, $nid, $votes) {
     if ($data->behavior == 'borda') {
         // borda is based upon the number of possible choices.
@@ -274,7 +406,7 @@ function advpoll_display_runoff_results($content_type, $nid, $data) {
                 )
         );
     } else {
-        
+
         $criteria = array();
         $criteria['entity_id'] = $nid;
         $criteria['entity_type'] = $content_type;
@@ -324,27 +456,27 @@ function advpoll_display_runoff_results($content_type, $nid, $data) {
             // store all choices by key
             $all_by_key[$choice['choice_id']] = $choice['choice'];
         }
-      
+
         // build rows for table
         foreach ($votes as $key => $vote) {
-          if ($uservotes && in_array($key, $uservotes)) {
-          $rows[] = array('id'=> $key, 'total' => $vote, 'votes' =>$tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => true);
-          } else {
-          $rows[] = array('id'=> $key, 'total' => $vote, 'votes' =>$tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => false);
-          }
-          // remove from keyed list of choices so we can ensure all choices display even if there 
-          // are no votes for that choice
-          unset($all_by_key[$key]);
+            if ($uservotes && in_array($key, $uservotes)) {
+                $rows[] = array('id' => $key, 'total' => $vote, 'votes' => $tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => true);
+            } else {
+                $rows[] = array('id' => $key, 'total' => $vote, 'votes' => $tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => false);
+            }
+            // remove from keyed list of choices so we can ensure all choices display even if there 
+            // are no votes for that choice
+            unset($all_by_key[$key]);
         }
 
-         $percentage = round($rows[0]['votes']/count($voters) * 100, 1);       
+        $percentage = round($rows[0]['votes'] / count($voters) * 100, 1);
         // add on items that did not receive votes
         if ($all_by_key) {
-            foreach($all_by_key as $key => $choice) {
-          $rows[] = array('id'=> $key, 'total' => 0, 'votes' => 0, 'choice' => $choice, 'user_choice' => false);
+            foreach ($all_by_key as $key => $choice) {
+                $rows[] = array('id' => $key, 'total' => 0, 'votes' => 0, 'choice' => $choice, 'user_choice' => false);
             }
         }
-        
+
         // pass to template for markup.
         $output .= theme('advpoll_runoff', array('total' => count($voters), 'rows' => $rows, 'percentage' => $percentage));
     }

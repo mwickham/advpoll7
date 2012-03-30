@@ -14,7 +14,7 @@
  * a separate item.
  */
 ?>
-<div class="poll run-off-poll">
+<div class="run-off-poll">
     <ol>
         <?php for($i = 0; $i < count($rows); $i++): ?>
         <li><?php print $rows[$i]['choice']; ?>
@@ -25,7 +25,7 @@
         
         <?php endfor; ?>
     </ol>
-    
+    <?php if (user_access('inspect all votes')): ?>
     <table class="sticky-enabled">
         <caption><?php print t('Per-round breakdown of votes for each choice.'); ?></caption>
         <thead><tr><th><?php print t('Rounds'); ?></th><th><?php print t('Final'); ?></th></tr></thead>
@@ -39,9 +39,9 @@
         <?php endfor; ?>
         </tbody>
         <tfoot>
-            <tr><td colspan="2"><?php print t('Total votes: :total', array(':total' => $total)); ?></td></tr>
+            <tr><td></td><td><?php print t('Total votes: :total', array(':total' => $total)); ?></td></tr>
         </tfoot>
         
     </table>
-    
+    <?php endif; ?>
 </div>

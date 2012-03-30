@@ -589,7 +589,7 @@ function advpoll_form_submit_check($data, $nid, $type) {
 
 function advpoll_process_writein($nid, $writein, $data) {
     $node = node_load($nid);
-    $id = dechex(time());
+    $id = dechex(time() * rand(5, 50));
     $writein_choice = array();
 
     if ($node) {

@@ -44,8 +44,8 @@ function advpoll_ranking_install() {
                 'allowed_values' => array(
                     'approval' => $t('Approval voting'),
                     'pool' => $t('Pool votes and choices'),
-                    'borda' => $t('Borda count'),
-                    'runoff' => $t('Instant run-off'),
+                    'borda' => $t('Borda count (Ranking Poll)'),
+                    'runoff' => $t('Instant run-off (Ranking Poll)'),
                 ),
                 'allowed_values_function' => '',
             ),

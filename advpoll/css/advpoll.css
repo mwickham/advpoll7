@@ -162,3 +162,16 @@ td.poll-chvotes .form-text {
 #advpolltable td .form-item label a {
     float: right;
 }
+
+.node-advpoll .run-off-poll {
+    margin: 0;
+}
+
+.node-advpoll .run-off-poll ol {
+   margin: 0;
+   padding: 10px 0 10px 30px;
+}
+
+.run-off-poll caption {
+    text-align: center;
+}
