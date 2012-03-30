@@ -4,83 +4,87 @@
  */
 
 (function ($) {
+    
     var currentIndex = 0;
     var totalItems = 0;
     
     Drupal.behaviors.advpollModule = {
         attach: function (context, settings) {
-            // only rebuild draggable form if it doesn't yet exist'
-            if ($('ul.selectable-list').length < 1) {
-                currentIndex = 0;
-                $('.advpoll-ranking-wrapper select').css('display', 'none');
-                $('.advpoll-ranking-wrapper input.form-text').css('display', 'none');
-                $('.advpoll-ranking-wrapper label').append('<a href="" class="vote add">'+Drupal.t('Add')+' ></a>');
-                $('.advpoll-ranking-wrapper .form-type-select').wrap('<li class="selectable" />');
-                $('.advpoll-ranking-wrapper .form-type-textfield').wrap('<li class="selectable" />');
-                $('.advpoll-ranking-wrapper li').wrapAll('<ul class="selectable-list" />');
-                $('#advpolltable').append('<tfoot><tr><td></td></tr></tfoot>');
-                $('#advpolltable tfoot tr td').append($('.advpoll-ranking-wrapper .form-submit'));
-                $('.advpoll-ranking-wrapper li a').each(function(index){
-                    $(this).data('index', index);
-                });                              
+            if (Drupal.settings && Drupal.settings.advpoll_ranking.display){
+                // only rebuild draggable form if it doesn't yet exist'
+                if ($('ul.selectable-list').length < 1) {
+                    currentIndex = 0;
+                    $('#advpolltable').css('display', 'block');
+                    $('.advpoll-ranking-wrapper select').css('display', 'none');
+                    $('.advpoll-ranking-wrapper input.form-text').css('visibility', 'hidden');
+                    $('.advpoll-ranking-wrapper label').append('<a href="" class="vote add">'+Drupal.t('Add')+' ></a>');
+                    $('.advpoll-ranking-wrapper .form-type-select').wrap('<li class="selectable" />');
+                    $('.advpoll-ranking-wrapper .form-type-textfield').wrap('<li class="selectable" />');
+                    $('.advpoll-ranking-wrapper li').wrapAll('<ul class="selectable-list" />');
+                    $('#advpolltable').append('<tfoot><tr class="submit-row"><td></td></tr><tr class="message"><td></td></tr></tfoot>');
+                    $('#advpolltable tfoot tr.submit-row td').append($('.advpoll-ranking-wrapper .form-submit'));
+                    $('.advpoll-ranking-wrapper li a').each(function(index){
+                        $(this).data('index', index);
+                    });                              
                 
-                // how many possible choices can user make?
-                totalItems = $('#advpolltable tbody tr').length;
+                    // how many possible choices can user make?
+                    totalItems = $('#advpolltable tbody tr').length;
                 
-                // these calls are checking to see if form has been returned with selected
-                // values - need to place them back into the list in the right order if so.
-                $('.advpoll-ranking-wrapper ul.selectable-list li').each(function(index) {
-                    if($(this).find('select').length) {
-                        var select = $(this).find('select');
-                        var selected = $("#"+select.attr('id')+" option[selected = selected]");
+                    // these calls are checking to see if form has been returned with selected
+                    // values - need to place them back into the list in the right order if so.
+                    $('.advpoll-ranking-wrapper ul.selectable-list li').each(function(index) {
+                        if($(this).find('select').length) {
+                            var select = $(this).find('select');
+                            var selected = $("#"+select.attr('id')+" option[selected = selected]");
                         
-                        if (select && selected.length) {
-                            if (selected.val() > 0) {
-                                var element = $(selected).parents('li');
-                                $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
-                                $('#advpolltable tbody td').eq(selected.val()-1).append(element);
-                                $('#advpolltable tbody tr').eq(selected.val()-1).css('display', 'block');
-                                currentIndex++;
-                            }
-                        } 
-                    } else {
+                            if (select && selected.length) {
+                                if (selected.val() > 0) {
+                                    var element = $(selected).parents('li');
+                                    $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
+                                    $('#advpolltable tbody td').eq(selected.val()-1).append(element);
+                                    $('#advpolltable tbody tr').eq(selected.val()-1).css('visibility', 'visible');
+                                    currentIndex++;
+                                }
+                            } 
+                        } else {
                             
-                        var input = $("input[name='write_in_weight']").attr('value');
-                        if (input > 0) {
-                            var element = $('.advpoll-ranking-wrapper ul.selectable-list li .form-item-write-in');
-                            element = element.parents('li');
-                            $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
-                            $('#advpolltable tbody td').eq(input-1).append(element);
-                            $('#advpolltable tbody tr').eq(input-1).css('display', 'block');
-                            currentIndex++;
+                            var input = $("input[name='write_in_weight']").attr('value');
+                            if (input > 0) {
+                                var element = $('.advpoll-ranking-wrapper ul.selectable-list li .form-item-write-in');
+                                element = element.parents('li');
+                                $(element).find('a.vote').removeClass('add').addClass('remove').html('(x)');
+                                $('#advpolltable tbody td').eq(input-1).append(element);
+                                $('#advpolltable tbody tr').eq(input-1).css('visibility', 'visible');
+                                currentIndex++;
                                 
-                        }
-                    }                    
-                });
-                
-                
-                Drupal.advpollUpdateEvents();
+                            }
+                        }                    
+                    });
+                                
+                    Drupal.advpollUpdateEvents();
 
-            }      
+                }      
 
-            if (Drupal.tableDrag) {
-                tableDrag = Drupal.tableDrag.advpolltable;
+                if (Drupal.tableDrag) {
+                    tableDrag = Drupal.tableDrag.advpolltable;
               
 
-                // Add a handler for when a row is swapped.
-                tableDrag.row.prototype.onSwap = function (swappedRow) {
+                    // Add a handler for when a row is swapped.
+                    tableDrag.row.prototype.onSwap = function (swappedRow) {
 
-                };
+                    };
 
-                // Add a handler so when a row is dropped, update fields dropped into new regions.
-                tableDrag.onDrop = function () {                    
-                    Drupal.advpollUpdateSelect();
-                    return true;
-                };
+                    // Add a handler so when a row is dropped, update fields dropped into new regions.
+                    tableDrag.onDrop = function () {                    
+                        Drupal.advpollUpdateSelect();
+                        return true;
+                    };
 
-            }
+                }
             
-        }       
+            } 
+        }
+        
     };
     
     // called when an item is added or removed from the list or upon initialization
@@ -92,9 +96,9 @@
                 $(this).removeClass('add').addClass('remove').html('(x)');
             }
             $('#advpolltable tbody td').eq(currentIndex).append(element);
-            $('#advpolltable tbody tr').eq(currentIndex).css('display', 'block');
-            Drupal.advpollUpdateEvents();
+            $('#advpolltable tbody tr').eq(currentIndex).css('visibility', 'visible');
             currentIndex++;
+            Drupal.advpollUpdateEvents();
             return false;
         });
 
@@ -112,8 +116,8 @@
             Drupal.advpollUpdateEvents();
             return false;
         });
-        
-        
+        Drupal.advpollUpdateCount();
+
     }
 
     // called when items are dragged in selected list.
@@ -140,31 +144,42 @@
     Drupal.advpollUpdateSelect = function() {
         $('#advpolltable tbody tr').each(function(index) {
             if ($(this).find('select').length) {
-                $(this).css('display', 'block');
+                $(this).css('visibility', 'visible');
 
                 var select = $(this).find('select');
                 $("#"+select.attr('id')+" option[value='"+(index + 1)+"']").attr('selected', 'selected');
                 
             } else if ($(this).find('input').length) {
-                $(this).css('display', 'block');
-                $(this).find('input').css('display', 'block');
+                $(this).css('visibility', 'visible');
+                $(this).find('input').css({
+                    visibility: 'visible', 
+                    position: 'relative'
+                });
                 $("input[name='write_in_weight']").attr('value', (index+1));
             } else {
-                $(this).css('display', 'none');
+                $(this).css('visibility', 'hidden');
             }
         });
         
         if ($('.advpoll-ranking-wrapper ul.selectable-list li input').length) {
-            $('.advpoll-ranking-wrapper ul.selectable-list li input').css('display', 'none');
+            $('.advpoll-ranking-wrapper ul.selectable-list li input').css({
+                visibility: 'hidden', 
+                position: 'absolute'
+            });
             $("input[name='write_in_weight']").attr('value', 0);
         }
         
         // if the user has selected the maximum number of votes, hide the add buttons
         if ($('#advpolltable tbody li').length >= totalItems) {
-            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('display', 'none');
+            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('visibility', 'hidden');
         } else {
-            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('display', 'block');            
+            $('.advpoll-ranking-wrapper ul.selectable-list li a').css('visibility', 'visible');            
         }
+    }
+   
+    Drupal.advpollUpdateCount = function () {
+        var votes = totalItems - currentIndex;
+        $('#advpolltable tfoot tr.message td').empty().append('<p>'+Drupal.t('Votes remaining:')+' '+votes+'</p>');   
     }
    
     /**
@@ -181,5 +196,5 @@
     Drupal.theme.prototype.tableDragChangedMarker = function () {
         return [];
     };   
-
+    
 })(jQuery);

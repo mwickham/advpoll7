@@ -3,6 +3,11 @@
 /*
  * @file
  * Advanced Ranking Poll Module 2/29/2012 MW
+ * TODO add validation to add/edit node form to prevent more than 10 ranking (max_choices)
+ */
+
+/*
+ * Implements hook_node_view
  */
 
 function advpoll_ranking_node_view($node, $view_mode) {
@@ -10,11 +15,12 @@ function advpoll_ranking_node_view($node, $view_mode) {
         $data = advpoll_get_data($node);
         if ($data->behavior == 'borda' || $data->behavior == 'runoff') {
             drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
-            drupal_add_js('/' . drupal_get_path('module', 'advpoll_ranking') . '/js/advpoll-ranking.js', 'external');
             // replace the markup for choices with appropriate markup.
             unset($node->content['advpoll_choice']);
             // check for eligibility to vote
             if (advpoll_user_eligibility($node)) {
+                drupal_add_js('/' . drupal_get_path('module', 'advpoll_ranking') . '/js/advpoll-ranking.js', 'external');
+                drupal_add_js(array('advpoll_ranking' => array('display' => 'true')), 'setting');
                 // print out voting form
                 $voteform = '<div class="advpoll-ranking-wrapper">' . drupal_render(drupal_get_form('advpoll_ranking_choice_form', $node)) . '</div>';
                 $node->content['advpoll_choice'] = array('#markup' => $voteform, '#weight' => 1);
@@ -22,7 +28,7 @@ function advpoll_ranking_node_view($node, $view_mode) {
                 // get user's votes if they're logged in and if voting is normal
                 $votes = array();
                 if ($data->mode == 'normal') {
-                    $votes = advpoll_get_user_votes($node->nid, $node->type);
+                    $votes = advpoll_get_user_votes($node->nid, $node->nid);
                 }
                 // Depending upon the reasons that the user is ineligible to vote, 
                 // select the appropriate theme.
@@ -31,7 +37,11 @@ function advpoll_ranking_node_view($node, $view_mode) {
                 } else if ($data->electoral && $data->show_results != 'aftervote') {
                     $results = theme('advpoll_ineligible', array('data' => $data));
                 } else {
-                    $results = advpoll_display_results($node->type, $node->nid, $data);
+                    if ($data->behavior == 'borda') {
+                        $results = advpoll_display_results($node->type, $node->nid, $data);
+                    } else {
+                        $results = advpoll_display_runoff_results($node->type, $node->nid, $data);
+                    }
                 }
                 $node->content['advpoll_choice'] = array('#markup' => $results, '#weight' => 1);
             }
@@ -39,9 +49,26 @@ function advpoll_ranking_node_view($node, $view_mode) {
     }
 }
 
+/**
+ * Implements hook_theme().
+ *
+ * Theme elements used by Advanced Ranking Poll.
+ */
+function advpoll_ranking_theme($existing, $type, $theme, $path) {
+    return array(
+        'advpoll_runoff' => array(
+            'variables' => array('total' => 0, 'rows' => array(), 'percentage' => 0),
+            'path' => drupal_get_path('module', 'advpoll_ranking') . '/templates',
+            'template' => 'advpoll-runoff'
+        ),
+    );
+}
+
 function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $data = advpoll_get_data($values);
     $count = count($data->choices);
+    // values are necessary to render select list. This means that the user can't allow more than
+    // 10 rankable items.
     $ranking = array('--', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th');
     $options = array();
     $id = floor(rand(1, 5) * time() / 1000);
@@ -50,12 +77,13 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $form['choice'] = array('#tree' => TRUE);
 
     for ($i = 0; $i < $count; $i++) {
-
-        $form['choice'][$i] = array(
-            '#type' => 'select',
-            '#title' => strip_tags($data->choices[$i]['choice']),
-            '#options' => $ranking,
-        );
+        if (!$data->choices[$i]['write_in']) {
+            $form['choice'][$i] = array(
+                '#type' => 'select',
+                '#title' => strip_tags($data->choices[$i]['choice']),
+                '#options' => $ranking,
+            );
+        }
     }
 
     if ($data->write_in) {
@@ -64,12 +92,16 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
             '#title' => t('Write-in'),
             '#size' => '30'
         );
+
+        // if JS is not used to render the draggable table markup, this value will not
+        // change - therefore we have an option about how to handle write-in values
+        // upon submit.
         $form['write_in_weight'] = array(
             '#type' => 'hidden',
-            '#default_value' => 0,
+            '#default_value' => 'no-js',
         );
     }
-    
+
     $form['submit'] = array(
         '#type' => 'submit',
         '#ajax' => array(
@@ -80,9 +112,11 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
         '#value' => t('Vote'),
     );
 
+    // Render draggable table with enough rows to accomodate possible choices.
+    // The table is ignored for submission values and is only for markup.
     $rows = '';
     for ($i = 0; $i < $data->max_choices; $i++) {
-        $rows .= '<tr  class="draggable"><td class="advpoll-weight item-' . $i . '"></td></tr>';
+        $rows .= '<tr  class="draggable"><td valign="top" class="advpoll-weight item-' . $i . '"></td></tr>';
     }
     $form['advpoll-table'] = array(
         '#type' => 'item',
@@ -91,38 +125,232 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
         '#markup' => '<table id="advpolltable"><thead><tr><th>' . t('Your Vote') . '</th></tr><tbody>' . $rows . '</tbody></table>',
     );
     drupal_add_tabledrag('advpolltable', 'match', 'sibling', 'advpoll-weight');
+
     return $form;
 }
 
 function advpoll_ranking_submit($form, &$form_state) {
     $data = advpoll_get_form_data($form_state);
     $count = count($data->choices);
-    $votes = $form[$count]['#value'];
     $nid = $form_state['build_info']['args'][0]->nid;
-    $type = $form_state['build_info']['args'][0]->type;
+    $votes = array();
+    // even though content type is advpoll, we'll track type as ranking for the purpose of
+    // managing votes in the voting API table
+    $type = 'advpoll';
     $writein = '';
+
+    $message = advpoll_form_submit_check($data, $nid, $type);
+
+    if ($message) {
+        $form['message'] = array(
+            '#type' => 'markup',
+            '#prefix' => '<div id="message">',
+            '#suffix' => '</div>',
+            '#markup' => $message,
+        );
+        return $form;
+    }
 
     // check to see if a write-in exists and was filled in.
     if ($data->write_in) {
 
         if (isset($form_state['values']['write_in'])) {
             $writein = $form_state['values']['write_in'];
+            $writein_weight = $form_state['values']['write_in_weight'];
 
             // sanitize and check to see if there's a valid write in afterward
             $writein = trim(strip_tags($writein));
             $writein = check_plain($writein);
 
-            if ($writein) {
-                $data->choices[] = advpoll_process_writein($nid, $writein, $data);
-            } else {
-                $form['message'] = array(
-                    '#type' => 'markup',
-                    '#prefix' => '<div id="message">',
-                    '#suffix' => '</div>',
-                    '#markup' => t('Please type in a valid write-in choice or select a different option.'),
-                );
-                return $form;
+            // Check for conditions under which checking for write in is appropriate
+            if ($writein_weight == 'no-js' || $writein_weight > 0) {
+                if ($writein) {
+                    $writein_choice = advpoll_process_writein($nid, $writein, $data);
+                    $data->choices[] = $writein_choice;
+
+                    if ($writein_weight == 'no-js') {
+                        $writein_weight = 1;
+                    }
+                    $votes[] = array('rank' => $writein_weight, 'id' => $writein_choice['choice_id']);
+                } else if ($writein_weight != 'no-js') {
+                    // assumes the user placed it in selection table but did not fill in the
+                    // form element.
+                    $form['message'] = array(
+                        '#type' => 'markup',
+                        '#prefix' => '<div id="message">',
+                        '#suffix' => '</div>',
+                        '#markup' => t('Please type in a valid write-in choice or select a different option.'),
+                    );
+                    return $form;
+                }
             }
         }
     }
+
+    // data structure returned from form is based upon whether it was a radios 
+    // or checkbox element
+    if ($data->max_choices > 1 || !$votes) {
+        $votes = advpoll_ranking_process_results($form_state['values']['choice'], $data->choices, $votes);
+    }
+
+    if (count($votes) > 0 && count($votes) <= $data->max_choices) {
+
+        advpoll_ranking_process_votes($data, $nid, $votes);
+
+        if ($data->behavior == 'borda') {
+            $element['#markup'] = advpoll_display_results('advpoll', $nid, $data);
+        } else {
+            $element['#markup'] = advpoll_display_runoff_results('advpoll', $nid, $data);
+        }
+        return $element;
+    } else {
+        $form['message'] = array(
+            '#type' => 'markup',
+            '#prefix' => '<div id="message">',
+            '#suffix' => '</div>',
+            '#markup' => t('Select up to @quantity @votes.', array('@quantity' => $data->max_choices, '@votes' => format_plural($data->max_choices, 'vote', 'votes'))),
+        );
+        return $form;
+    }
 }
+
+/*
+ * Add votes for tallying by value.
+ */
+
+function advpoll_ranking_process_votes($data, $nid, $votes) {
+    if ($data->behavior == 'borda') {
+        // borda is based upon the number of possible choices.
+        // algorithm is (number of choices - ranking) where first 
+        // place is 0.
+        $points = count($data->choices);
+    } else {
+        // runoff voting ranks each user's choices and eliminates
+        // low score.
+        $points = $data->max_choices;
+    }
+
+    foreach ($votes as $ranking) {
+        $vote = array();
+        $vote['type'] = 'advpoll';
+        $vote['tag'] = $ranking['id'];
+        $vote['nid'] = $nid;
+        $vote['value'] = $points - ($ranking['rank'] - 1);
+        $vote['mode'] = $data->mode;
+        $vote['duration'] = $data->cookie_duration;
+        advpoll_add_votes($vote);
+    }
+}
+
+function advpoll_ranking_process_results($results, $choices, $votes) {
+
+    foreach ($results as $key => $result) {
+        if ($result) {
+            $votes[] = array('rank' => $result, 'id' => $choices[$key]['choice_id']);
+        }
+    }
+    return $votes;
+}
+
+/*
+ * Determines how to theme poll results based on settings in $data.
+ * The $data object is returned from one of the helper functions in
+ * advpoll_helper.inc.
+ */
+
+function advpoll_display_runoff_results($content_type, $nid, $data) {
+    $output = '';
+
+    // get user's votes if they're logged in and if voting is normal
+    $uservotes = array();
+    if ($data->mode == 'normal') {
+        $uservotes = advpoll_get_user_votes($nid, $content_type);
+    }
+
+    if ($data->show_results == 'never' || ($data->show_results == 'afterclose' && $data->end_date > time())) {
+        $output .= theme('advpoll_noresults', array(
+            'data' => $data,
+            'votes' => $uservotes,
+                )
+        );
+    } else {
+        
+        $criteria = array();
+        $criteria['entity_id'] = $nid;
+        $criteria['entity_type'] = $content_type;
+
+        $results = votingapi_select_votes($criteria);
+
+        $voters = array();
+        $votes = array();
+        $tally = array();
+
+        $user = '';
+        // for run-off voting each vote from a user counts as one vote regardless of how
+        // many candidates they selected. 
+        foreach ($results as $result) {
+            // get votes per user to get total votes
+            ($result['uid']) ? $user = $result['uid'] : $user = $result['vote_source'];
+            if (isset($voters[$user])) {
+                $voters[$user]++;
+            } else {
+                $voters[$user] = 1;
+            }
+
+            // total value of all votes for each choice
+            if (isset($votes[$result['tag']])) {
+                $votes[$result['tag']] += $result['value'];
+            } else {
+                $votes[$result['tag']] = $result['value'];
+            }
+            // total individual votes for each choice
+            if (isset($tally[$result['tag']])) {
+                $tally[$result['tag']]++;
+            } else {
+                $tally[$result['tag']] = 1;
+            }
+        }
+
+        // order poll by votes
+        asort($votes);
+        // get votes in descending order
+        $votes = array_reverse($votes, true);
+
+        $rows = array();
+        $all_by_key = array();
+
+        // get all choices with unique ID as key
+        foreach ($data->choices as $choice) {
+            // store all choices by key
+            $all_by_key[$choice['choice_id']] = $choice['choice'];
+        }
+      
+        // build rows for table
+        foreach ($votes as $key => $vote) {
+          if ($uservotes && in_array($key, $uservotes)) {
+          $rows[] = array('id'=> $key, 'total' => $vote, 'votes' =>$tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => true);
+          } else {
+          $rows[] = array('id'=> $key, 'total' => $vote, 'votes' =>$tally[$key], 'choice' => $all_by_key[$key], 'user_choice' => false);
+          }
+          // remove from keyed list of choices so we can ensure all choices display even if there 
+          // are no votes for that choice
+          unset($all_by_key[$key]);
+        }
+
+         $percentage = round($rows[0]['votes']/count($voters) * 100, 1);       
+        // add on items that did not receive votes
+        if ($all_by_key) {
+            foreach($all_by_key as $key => $choice) {
+          $rows[] = array('id'=> $key, 'total' => 0, 'votes' => 0, 'choice' => $choice, 'user_choice' => false);
+            }
+        }
+        
+
+
+        // pass to template for markup.
+        $output .= theme('advpoll_runoff', array('total' => count($voters), 'rows' => $rows, 'percentage' => $percentage));
+    }
+
+    return $output;
+}
+

@@ -50,6 +50,11 @@ td.poll-chvotes .form-text {
   width: 85%;
 }
 
+.node-advpoll #message {
+    color: #DD0000;
+    font-style: italic;
+}
+
 .advpoll-write-in {
     position: relative;
     width: 375px;
@@ -71,7 +76,6 @@ td.poll-chvotes .form-text {
 }
 
 .advpoll-ranking-wrapper .advpoll-vote-region {
-    width: 45%;
     float: right;
 }
 
@@ -82,6 +86,15 @@ td.poll-chvotes .form-text {
 .advpoll-ranking-wrapper .tabledrag-toggle-weight-wrapper {
     display: none;
 }
+
+#advpolltable {
+    display: none;
+    max-width: 265px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ccc;
+}
+
 #advpolltable tbody {
     margin: 5px;
     padding-bottom: 0;
@@ -94,8 +107,9 @@ td.poll-chvotes .form-text {
     color: #000;
     font-weight: bold;
     text-align: center;
-    padding: 10px 0;
+    padding: 5px 0 10px 0;
     background-color: transparent;
+    width: 260px;
 }
 
 #advpolltable thead tr {
@@ -106,6 +120,7 @@ td.poll-chvotes .form-text {
     text-align: center;
     padding: 0;
     margin: 0;
+    width: 265px;    
 }
 
 #advpolltable tfoot tr {
@@ -114,20 +129,36 @@ td.poll-chvotes .form-text {
 }
 
 #advpolltable tfoot .form-submit {
-    margin: 0;
+    margin: 10px 0;
 }
 
-.advpoll-ranking-wrapper li a {
-    float: right;
+
+#advpolltable tr .form-item {
+    white-space: normal;
 }
 
-#advpolltable td {
-    border: none;
+#advpolltable td li {
+  display: block;
+  width: 198px;
+  list-style: none;
+  float: right;
+}
+
+#advpolltable td label {
+  display: block;
+  word-wrap: break-word;
+  width: 200px;
 }
 
 #advpolltable td .form-item label {
     display: block;
     padding: 0;
-    margin: 0;
-    width: 250px;
+    margin: 0 0 5px 0;
+    width: 210px;
+    float: right;
+}
+
+.advpoll-ranking-wrapper ul.selectable-list label a,
+#advpolltable td .form-item label a {
+    float: right;
 }

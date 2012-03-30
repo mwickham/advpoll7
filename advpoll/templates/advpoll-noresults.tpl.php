@@ -25,8 +25,9 @@
  *   mode:            The mode used to store the vote: normal, cookie, unlimited
  *   cookie_duration: (int) If mode is cookie, the number of minutes to delay votes.
  *   state:           Is the poll 'open' or 'close'
- *   behavior:        approval or poll - determines how to treat multiple vote/user 
- *                    tally.
+ *   behavior:        approval or pool - determines how to treat multiple vote/user 
+ *                    tally. When plugin is installed, voting will default to tabulating
+ *                    values returned from voting API.
  *   max_choices:     (int) How many choices a user can select per vote.
  *   show_results:    When to display results - aftervote, afterclose or never.
  *   electoral:       Boolean - voting restricted to users in an electoral list.

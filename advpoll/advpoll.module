@@ -3,6 +3,8 @@
 /*
  * @file
  * Advanced Poll Module 2/29/2012 MW
+ * TODO Add validation to node add/edit page to ensure max choices is <= number of choices.
+ * TODO Allow users with permission to remove votes do so.
  */
 module_load_include('inc', 'advpoll', 'includes/advpoll_voteapi');
 module_load_include('inc', 'advpoll', 'includes/advpoll_helper');
@@ -475,39 +477,19 @@ function advpoll_form_submit($form, &$form_state) {
     $count = count($data->choices);
     $votes = $form[$count]['#value'];
     $nid = $form_state['build_info']['args'][0]->nid;
-    $type = $form_state['build_info']['args'][0]->type;
+    $type = 'advpoll';
     $writein = '';
 
-    // checking again for user having already voted to prevent having multiple
-    // instances of the same poll open on different pages to cast more votes.
-    if ($data->mode === 'cookie' && isset($_COOKIE[$node->type . $nid])) {
+    $message = advpoll_form_submit_check($data, $nid, $type);
+    
+    if ($message) {
         $form['message'] = array(
             '#type' => 'markup',
             '#prefix' => '<div id="message">',
             '#suffix' => '</div>',
-            '#markup' => t('You have already voted on this poll.'),
+            '#markup' => $message,
         );
         return $form;
-    }
-
-    if ($data->mode === 'normal') {
-        global $user;
-        $criteria = array();
-        $criteria['entity_id'] = $nid;
-        $criteria['entity_type'] = $type;
-
-        $criteria['uid'] = $user->uid;
-
-        $results = votingapi_select_votes($criteria);
-        if ($results) {
-            $form['message'] = array(
-                '#type' => 'markup',
-                '#prefix' => '<div id="message">',
-                '#suffix' => '</div>',
-                '#markup' => t('You have already voted on this poll.'),
-            );
-            return $form;
-        }
     }
 
     // check to see if a write-in exists and was filled in.
@@ -550,21 +532,15 @@ function advpoll_form_submit($form, &$form_state) {
     }
 
     if (count($selected) > 0 && count($selected) <= $data->max_choices) {
-        $markup = '';
-        global $user;
-
         foreach ($selected as $item) {
             $vote = array();
             $vote['type'] = 'advpoll';
             $vote['tag'] = $item;
             $vote['nid'] = $nid;
+            $vote['value'] = 1;
             $vote['mode'] = $data->mode;
             $vote['duration'] = $data->cookie_duration;
             advpoll_add_votes($vote);
-        }
-
-        if ($writein_choice) {
-            $data->choices[] = $writein_choice;
         }
 
         $element['#markup'] = advpoll_display_results('advpoll', $nid, $data);
@@ -578,6 +554,30 @@ function advpoll_form_submit($form, &$form_state) {
         );
         return $form;
     }
+}
+
+// Method is used to check again for user having already voted to prevent having multiple
+// instances of the same poll open on different pages to cast more votes.
+function advpoll_form_submit_check($data, $nid, $type) {
+    if ($data->mode === 'cookie' && isset($_COOKIE['advpoll' . $nid])) {
+        return t('You have already voted on this poll.');
+    }
+
+    if ($data->mode === 'normal') {
+        global $user;
+        $criteria = array();
+        $criteria['entity_id'] = $nid;
+        $criteria['entity_type'] = $type;
+
+        $criteria['uid'] = $user->uid;
+
+        $results = votingapi_select_votes($criteria);
+        if ($results) {
+            return t('You have already voted on this poll.');
+        }
+    }
+
+    return;
 }
 
 /*

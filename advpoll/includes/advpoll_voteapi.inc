@@ -15,7 +15,6 @@
  *     'choices' which matches the index of each choice with its tallied votes.
  *     'total' which is the total of all votes
  */
-
 function advpoll_get_votes($content_type, $nid, $behavior = 'approval') {
     $criteria = array();
     $criteria['entity_id'] = $nid;
@@ -25,8 +24,10 @@ function advpoll_get_votes($content_type, $nid, $behavior = 'approval') {
 
     if ($behavior === 'approval') {
         $tabulated = advpoll_approval_vote($results);
-    } else {
+    } else if ($behavior === 'pool') {
         $tabulated = advpoll_pooled_vote($results);
+    } else {
+        $tabulated = advpoll_default_vote($results);
     }
 
     return $tabulated;
@@ -75,7 +76,12 @@ function advpoll_approval_vote($results) {
  *
  * @param $results - results returned from voting api.
  * @return
- *   An array of percentages per choice index and total votes.
+ *   Keyed array containing vote choices in descending order and total votes.
+ *   $choices contains:
+ *      index = the index of the choice
+ *      percentage = percentage of votes choice received.
+ *      votes = the number of votes received.
+ *
  */
 function advpoll_pooled_vote($results) {
     $tallied = array();
@@ -92,6 +98,39 @@ function advpoll_pooled_vote($results) {
     $tabulated = advpoll_calculate_percentage($tallied, $total);
 
     return array('choices' => $tabulated, 'total' => $total);
+}
+
+/**
+ * The default voting count uses the 'value' field returned by the voting API
+ * to tally votes and arrive at percentages.
+ *
+ * @param $results - results returned from voting api.
+ * @return
+ *   Keyed array containing vote choices in descending order and total votes.
+ *   $choices contains:
+ *      index = the index of the choice
+ *      percentage = percentage of votes choice received.
+ *      votes = the number of votes received.
+ *
+ */
+function advpoll_default_vote($results) {
+    $tallied = array();
+    $total = 0;
+    $points = 0;
+    foreach ($results as $result) {
+        $points = (int) $result['value'];
+        if (isset($tallied[$result['tag']])) {
+            $tallied[$result['tag']] += $points;;
+        } else {
+            $tallied[$result['tag']] = $points;
+        }
+        $total += $points;
+    }
+
+    $tabulated = advpoll_calculate_percentage($tallied, $total);
+
+    return array('choices' => $tabulated, 'total' => $total);
+    
 }
 
 /**
@@ -140,6 +179,10 @@ function advpoll_user_eligibility($node) {
 
     global $user;
     $data = advpoll_get_data($node);
+
+    if ($data->write_in && !user_access('add write-ins')) {
+        return false;
+    }
 
     if ($data->electoral) {
         if (!advpoll_check_electoral_list($user->uid, $node->nid)) {
@@ -204,7 +247,7 @@ function advpoll_add_votes($vote) {
         $votes = array(
             'entity_type' => $vote['type'],
             'entity_id' => $vote['nid'],
-            'value' => 1,
+            'value' => $vote['value'],
             'tag' => $vote['tag'],
         );
     } else {
@@ -220,7 +263,7 @@ function advpoll_add_votes($vote) {
         $votes = array(
             'entity_type' => $vote['type'],
             'entity_id' => $vote['nid'],
-            'value' => 1,
+            'value' => $vote['value'],
             'tag' => $vote['tag'],
             'uid' => '',
             'vote_source' => time(),
@@ -302,6 +345,6 @@ function advpoll_get_user_votes($nid, $content_type) {
             $votes[] = $result['tag'];
         }
     }
-    
+
     return $votes;
 }
