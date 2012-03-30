@@ -4,6 +4,7 @@
  * @file
  * Advanced Ranking Poll Module 2/29/2012 MW
  * TODO add validation to add/edit node form to prevent more than 10 ranking (max_choices)
+ * TODO clean up tab pages to display appropriately.
  */
 
 /*
@@ -187,8 +188,8 @@ function advpoll_ranking_submit($form, &$form_state) {
         }
     }
 
-    // data structure returned from form is based upon whether it was a radios 
-    // or checkbox element
+    // If the poll only allows one vote but there is a vote, that is the write in value. No need to process.
+    // Otherwise, we need to process it.
     if ($data->max_choices > 1 || !$votes) {
         $votes = advpoll_ranking_process_results($form_state['values']['choice'], $data->choices, $votes);
     }
@@ -217,7 +218,6 @@ function advpoll_ranking_submit($form, &$form_state) {
 /*
  * Add votes for tallying by value.
  */
-
 function advpoll_ranking_process_votes($data, $nid, $votes) {
     if ($data->behavior == 'borda') {
         // borda is based upon the number of possible choices.
@@ -345,8 +345,6 @@ function advpoll_display_runoff_results($content_type, $nid, $data) {
             }
         }
         
-
-
         // pass to template for markup.
         $output .= theme('advpoll_runoff', array('total' => count($voters), 'rows' => $rows, 'percentage' => $percentage));
     }
