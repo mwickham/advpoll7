@@ -117,6 +117,7 @@ function advpoll_default_vote($results) {
     $tallied = array();
     $total = 0;
     $points = 0;
+    $totalpoints = 0;
     foreach ($results as $result) {
         $points = (int) $result['value'];
         if (isset($tallied[$result['tag']])) {
@@ -124,10 +125,11 @@ function advpoll_default_vote($results) {
         } else {
             $tallied[$result['tag']] = $points;
         }
-        $total += $points;
+        $totalpoints += $points;
+        $total++;
     }
 
-    $tabulated = advpoll_calculate_percentage($tallied, $total);
+    $tabulated = advpoll_calculate_percentage($tallied, $totalpoints);
 
     return array('choices' => $tabulated, 'total' => $total);
     

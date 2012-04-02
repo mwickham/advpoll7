@@ -53,7 +53,7 @@ function advpoll_votes_page($node) {
         } else {
             $userObj = user_load($userID);
             if ($userObj) {
-                $userID = l($userObj->name, '/user/' . $userID);
+                $userID = l($userObj->name, 'user/' . $userID);
             }
         }
 

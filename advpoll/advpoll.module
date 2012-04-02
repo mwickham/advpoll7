@@ -13,91 +13,91 @@ module_load_include('inc', 'advpoll', 'includes/advpoll_helper');
  * Implements hook_menu()
  */
 function advpoll_menu() {
-    // changed to inspect-votes because it conflicted with path for standard poll module.
-    $menu['node/%node/advpoll/votes'] = array(
-        'title' => 'Votes',
-        'page callback' => 'advpoll_votes_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_votes_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
-    // Show electoral list tab if using the functionality.
-    $menu['node/%node/electoral-list'] = array(
-        'title' => 'Electoral list',
-        'page callback' => 'advpoll_electoral_list_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_electoral_list_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
+  // changed to inspect-votes because it conflicted with path for standard poll module.
+  $menu['node/%node/advpoll/votes'] = array(
+      'title' => 'Votes',
+      'page callback' => 'advpoll_votes_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_votes_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
+  // Show electoral list tab if using the functionality.
+  $menu['node/%node/electoral-list'] = array(
+      'title' => 'Electoral list',
+      'page callback' => 'advpoll_electoral_list_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_electoral_list_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
 
-    // Allow voters to be removed.
-    $menu['node/%node/remove'] = array(
-        'page callback' => 'advpoll_remove_voter',
-        'page arguments' => array(1),
-        'access arguments' => array('administer polls'),
-        'weight' => 3,
-        'type' => MENU_CALLBACK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
+  // Allow voters to be removed.
+  $menu['node/%node/remove'] = array(
+      'page callback' => 'advpoll_remove_voter',
+      'page arguments' => array(1),
+      'access arguments' => array('administer polls'),
+      'weight' => 3,
+      'type' => MENU_CALLBACK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
 
-    // Allow votes to be cleared.
-    $menu['node/%node/advpoll/votes/clear'] = array(
-        'page callback' => 'advpoll_clear_votes_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_clear_votes_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
+  // Allow votes to be cleared.
+  $menu['node/%node/advpoll/votes/clear'] = array(
+      'page callback' => 'advpoll_clear_votes_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_clear_votes_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
 
-    // Show the write-ins tab if there is at least one.
-    $menu['node/%node/write-ins'] = array(
-        'title' => 'Write-ins',
-        'page callback' => 'advpoll_writeins_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_writeins_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
+  // Show the write-ins tab if there is at least one.
+  $menu['node/%node/write-ins'] = array(
+      'title' => 'Write-ins',
+      'page callback' => 'advpoll_writeins_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_writeins_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
 
-    $menu['node/%node/results'] = array(
-        'title' => 'Results',
-        'page callback' => 'advpoll_results_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_results_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'advpoll.pages.inc',
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-    );
+  $menu['node/%node/results'] = array(
+      'title' => 'Results',
+      'page callback' => 'advpoll_results_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_results_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'advpoll.pages.inc',
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+  );
 
-    // Allow votes to be cleared.
-    $menu['node/%node/advpoll/votes/clear'] = array(
-        'page callback' => 'advpoll_clear_votes_page',
-        'page arguments' => array(1),
-        'access callback' => '_advpoll_clear_votes_access',
-        'access arguments' => array(1),
-        'weight' => 3,
-        'type' => MENU_LOCAL_TASK,
-        'file path' => drupal_get_path('module', 'advpoll') . '/includes',
-        'file' => 'advpoll.pages.inc',
-    );
-    return $menu;
+  // Allow votes to be cleared.
+  $menu['node/%node/advpoll/votes/clear'] = array(
+      'page callback' => 'advpoll_clear_votes_page',
+      'page arguments' => array(1),
+      'access callback' => '_advpoll_clear_votes_access',
+      'access arguments' => array(1),
+      'weight' => 3,
+      'type' => MENU_LOCAL_TASK,
+      'file path' => drupal_get_path('module', 'advpoll') . '/includes',
+      'file' => 'advpoll.pages.inc',
+  );
+  return $menu;
 }
 
 /**
@@ -106,39 +106,39 @@ function advpoll_menu() {
  * since the poll content types are CCK.
  */
 function advpoll_permission() {
-    return array(
-        'vote on polls' => array(
-            'title' => t('Vote on polls'),
-            'description' => t('User may vote on polls.'),
-        ),
-        'cancel own vote' => array(
-            'title' => t('Cancel own vote'),
-            'description' => t('User may cancel their vote in cases where individual user votes are being tracked.'),
-        ),
-        'administer polls' => array(
-            'title' => t('Administer polls'),
-            'description' => t('User may use poll administration pages.'),
-            'restrict access' => TRUE,
-        ),
-        'inspect all votes' => array(
-            'title' => t('Inspect all votes'),
-            'description' => t('User may use votes administration page.'),
-            'restrict access' => TRUE,
-        ),
-        'show vote results' => array(
-            'title' => t('Show vote results'),
-            'description' => t('User may view poll results in cases where access to results is generally restricted.'),
-        ),
-        'access electoral list' => array(
-            'title' => t('Access electoral list'),
-            'description' => t('User may see electoral lists associated with each poll.'),
-        ),
-        'add write-ins' => array(
-            'title' => t('Add write-in votes'),
-            'description' => t('User may add write-ins for polls that allow them.'),
-            'restrict access' => TRUE,
-        ),
-    );
+  return array(
+      'vote on polls' => array(
+          'title' => t('Vote on polls'),
+          'description' => t('User may vote on polls.'),
+      ),
+      'cancel own vote' => array(
+          'title' => t('Cancel own vote'),
+          'description' => t('User may cancel their vote in cases where individual user votes are being tracked.'),
+      ),
+      'administer polls' => array(
+          'title' => t('Administer polls'),
+          'description' => t('User may use poll administration pages.'),
+          'restrict access' => TRUE,
+      ),
+      'inspect all votes' => array(
+          'title' => t('Inspect all votes'),
+          'description' => t('User may use votes administration page.'),
+          'restrict access' => TRUE,
+      ),
+      'show vote results' => array(
+          'title' => t('Show vote results'),
+          'description' => t('User may view poll results in cases where access to results is generally restricted.'),
+      ),
+      'access electoral list' => array(
+          'title' => t('Access electoral list'),
+          'description' => t('User may see electoral lists associated with each poll.'),
+      ),
+      'add write-ins' => array(
+          'title' => t('Add write-in votes'),
+          'description' => t('User may add write-ins for polls that allow them.'),
+          'restrict access' => TRUE,
+      ),
+  );
 }
 
 /**
@@ -149,36 +149,36 @@ function advpoll_permission() {
  * field to disappear as well as other wonkiness.
  */
 function advpoll_node_view($node, $view_mode) {
-    if ($node->type == 'advpoll') {
-        $data = advpoll_get_data($node);
-        if ($data->behavior == 'approval' || $data->behavior == 'pool') {
-            drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
-            // replace the markup for choices with appropriate markup.
-            unset($node->content['advpoll_choice']);
-            // check for eligibility to vote
-            if (advpoll_user_eligibility($node)) {
-                // print out voting form
-                $voteform = drupal_get_form('advpoll_choice_form', $node);
-                $node->content['advpoll_choice'] = array(0 => $voteform, '#weight' => 1);
-            } else {
-                // get user's votes if they're logged in and if voting is normal
-                $votes = array();
-                if ($data->mode == 'normal') {
-                    $votes = advpoll_get_user_votes($node->nid, $node->type);
-                }
-                // Depending upon the reasons that the user is ineligible to vote, 
-                // select the appropriate theme.
-                if (($data->state == 'close' && $data->show_results != 'afterclose') || ($data->start_date > time() || $data->end_date < time())) {
-                    $results = theme('advpoll_closed', array('data' => $data));
-                } else if ($data->electoral && $data->show_results != 'aftervote') {
-                    $results = theme('advpoll_ineligible', array('data' => $data));
-                } else {
-                    $results = advpoll_display_results($node->type, $node->nid, $data);
-                }
-                $node->content['advpoll_choice'] = array('#markup' => $results, '#weight' => 1);
-            }
+  if ($node->type == 'advpoll') {
+    $data = advpoll_get_data($node);
+    if ($data->behavior == 'approval' || $data->behavior == 'pool') {
+      drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
+      // replace the markup for choices with appropriate markup.
+      unset($node->content['advpoll_choice']);
+      // check for eligibility to vote
+      if (advpoll_user_eligibility($node)) {
+        // print out voting form
+        $voteform = drupal_get_form('advpoll_choice_form', $node);
+        $node->content['advpoll_choice'] = array(0 => $voteform, '#weight' => 1);
+      } else {
+        // get user's votes if they're logged in and if voting is normal
+        $votes = array();
+        if ($data->mode == 'normal') {
+          $votes = advpoll_get_user_votes($node->nid, $node->type);
         }
+        // Depending upon the reasons that the user is ineligible to vote,
+        // select the appropriate theme.
+        if (($data->state == 'close' && $data->show_results != 'afterclose') || ($data->start_date > time() || $data->end_date < time())) {
+          $results = theme('advpoll_closed', array('data' => $data));
+        } else if ($data->electoral && $data->show_results != 'aftervote') {
+          $results = theme('advpoll_ineligible', array('data' => $data));
+        } else {
+          $results = advpoll_display_results($node->type, $node->nid, $data);
+        }
+        $node->content['advpoll_choice'] = array('#markup' => $results, '#weight' => 1);
+      }
     }
+  }
 }
 
 /**
@@ -188,13 +188,13 @@ function advpoll_node_view($node, $view_mode) {
  */
 function advpoll_block_info() {
 
-    $blocks['advpoll_recent'] = array(
-        'info' => t('Advanced Poll: Most Recent'),
-    );
+  $blocks['advpoll_recent'] = array(
+      'info' => t('Advanced Poll: Most Recent'),
+  );
 
-    $blocks = advpoll_get_poll_info_blocks($blocks);
+  $blocks = advpoll_get_poll_info_blocks($blocks);
 
-    return $blocks;
+  return $blocks;
 }
 
 /**
@@ -203,22 +203,22 @@ function advpoll_block_info() {
  * Defines views for blocks defined in advpoll_block_info().
  */
 function advpoll_block_view($delta = '') {
-    $block = array();
+  $block = array();
 
-    switch ($delta) {
-        case 'advpoll_recent':
-            $block['subject'] = t('Most Recent Poll');
-            $block['content'] = array(
-                '#markup' => advpoll_get_recent(),
-            );
+  switch ($delta) {
+    case 'advpoll_recent':
+      $block['subject'] = t('Most Recent Poll');
+      $block['content'] = array(
+          '#markup' => advpoll_get_recent(),
+      );
 
-            break;
-        default:
-            $block = advpoll_generate_block_view($block, $delta);
-            break;
-    }
+      break;
+    default:
+      $block = advpoll_generate_block_view($block, $delta);
+      break;
+  }
 
-    return $block;
+  return $block;
 }
 
 /**
@@ -227,33 +227,33 @@ function advpoll_block_view($delta = '') {
  * Theme elements used by Advanced Poll.
  */
 function advpoll_theme($existing, $type, $theme, $path) {
-    return array(
-        'advpoll_bar' => array(
-            'variables' => array('percentage' => 0, 'votes' => 0, 'voted' => 0),
-            'path' => drupal_get_path('module', 'advpoll') . '/templates',
-            'template' => 'advpoll-bar'
-        ),
-        'advpoll_closed' => array(
-            'variables' => array('data' => null),
-            'path' => drupal_get_path('module', 'advpoll') . '/templates',
-            'template' => 'advpoll-closed'
-        ),
-        'advpoll_noresults' => array(
-            'variables' => array('available_date' => null, 'votes' => null,),
-            'path' => drupal_get_path('module', 'advpoll') . '/templates',
-            'template' => 'advpoll-noresults'
-        ),
-        'advpoll_results' => array(
-            'variables' => array('bars' => null, 'total' => 0, 'voted' => null),
-            'path' => drupal_get_path('module', 'advpoll') . '/templates',
-            'template' => 'advpoll-results'
-        ),
-        'advpoll_ineligible' => array(
-            'variables' => array('data' => null),
-            'path' => drupal_get_path('module', 'advpoll') . '/templates',
-            'template' => 'advpoll-ineligible'
-        ),
-    );
+  return array(
+      'advpoll_bar' => array(
+          'variables' => array('percentage' => 0, 'votes' => 0, 'voted' => 0),
+          'path' => drupal_get_path('module', 'advpoll') . '/templates',
+          'template' => 'advpoll-bar'
+      ),
+      'advpoll_closed' => array(
+          'variables' => array('data' => null),
+          'path' => drupal_get_path('module', 'advpoll') . '/templates',
+          'template' => 'advpoll-closed'
+      ),
+      'advpoll_noresults' => array(
+          'variables' => array('available_date' => null, 'votes' => null,),
+          'path' => drupal_get_path('module', 'advpoll') . '/templates',
+          'template' => 'advpoll-noresults'
+      ),
+      'advpoll_results' => array(
+          'variables' => array('bars' => null, 'total' => 0, 'voted' => null),
+          'path' => drupal_get_path('module', 'advpoll') . '/templates',
+          'template' => 'advpoll-results'
+      ),
+      'advpoll_ineligible' => array(
+          'variables' => array('data' => null),
+          'path' => drupal_get_path('module', 'advpoll') . '/templates',
+          'template' => 'advpoll-ineligible'
+      ),
+  );
 }
 
 /*
@@ -262,31 +262,31 @@ function advpoll_theme($existing, $type, $theme, $path) {
  */
 
 function advpoll_node_presave($node) {
-    if ($node->type === 'advpoll') {
-        // get votes for this node
-        $criteria = array();
-        $criteria['entity_id'] = $node->nid;
-        $criteria['entity_type'] = $node->type;
-        $results = votingapi_select_votes($criteria);
+  if ($node->type === 'advpoll') {
+    // get votes for this node
+    $criteria = array();
+    $criteria['entity_id'] = $node->nid;
+    $criteria['entity_type'] = $node->type;
+    $results = votingapi_select_votes($criteria);
 
-        if ($results) {
-            // get all existing choices in the node
-            $choices = $node->advpoll_choice[$node->language];
+    if ($results) {
+      // get all existing choices in the node
+      $choices = $node->advpoll_choice[$node->language];
 
-            foreach ($choices as $choice) {
-                $ids[] = $choice['choice_id'];
-            }
+      foreach ($choices as $choice) {
+        $ids[] = $choice['choice_id'];
+      }
 
-            $noMatch = array();
-            foreach ($results as $vote) {
-                if (!in_array($vote['tag'], $ids)) {
-                    $noMatch[] = $vote;
-                }
-            }
-
-            votingapi_delete_votes($noMatch);
+      $noMatch = array();
+      foreach ($results as $vote) {
+        if (!in_array($vote['tag'], $ids)) {
+          $noMatch[] = $vote;
         }
+      }
+
+      votingapi_delete_votes($noMatch);
     }
+  }
 }
 
 /*
@@ -296,44 +296,45 @@ function advpoll_node_presave($node) {
  */
 
 function advpoll_display_results($content_type, $nid, $data) {
-    $output = '';
 
-    // get user's votes if they're logged in and if voting is normal
-    $votes = array();
-    if ($data->mode == 'normal') {
-        $votes = advpoll_get_user_votes($nid, $content_type);
-    }
+  $output = '';
 
-    if ($data->show_results == 'never' || ($data->show_results == 'afterclose' && $data->end_date > time())) {
-        $output .= theme('advpoll_noresults', array(
-            'data' => $data,
-            'votes' => $votes,
-                )
-        );
-    } else {
-        $results = advpoll_get_votes($content_type, $nid, $data->behavior);
-        $bars = '';
-        $final = advpoll_update_choices($data->choices, $results['choices']);
-        foreach ($final as $item) {
-            $voted = false;
+  // get user's votes if they're logged in and if voting is normal
+  $votes = array();
+  if ($data->mode == 'normal') {
+    $votes = advpoll_get_user_votes($nid, $content_type);
+  }
 
-            if (in_array($item['tag'], $votes)) {
-                $voted = true;
-            }
-
-            $bars .= theme('advpoll_bar', array(
-                'title' => $item['title'],
-                'percentage' => $item['percentage'],
-                'votes' => $item['votes'],
-                'voted' => $voted,
+  if ($data->show_results == 'never' || ($data->show_results == 'afterclose' && $data->end_date > time())) {
+    $output .= theme('advpoll_noresults', array(
+                'data' => $data,
+                'votes' => $votes,
                     )
-            );
-        }
+    );
+  } else {
+    $results = advpoll_get_votes($content_type, $nid, $data->behavior);
+    $bars = '';
+    $final = advpoll_update_choices($data->choices, $results['choices']);
+    foreach ($final as $item) {
+      $voted = false;
 
-        $output .= theme('advpoll_results', array('bars' => $bars, 'total' => $results['total'], 'voted' => $votes));
+      if (in_array($item['tag'], $votes)) {
+        $voted = true;
+      }
+
+      $bars .= theme('advpoll_bar', array(
+                  'title' => $item['title'],
+                  'percentage' => $item['percentage'],
+                  'votes' => $item['votes'],
+                  'voted' => $voted,
+                      )
+      );
     }
 
-    return $output;
+    $output .= theme('advpoll_results', array('bars' => $bars, 'total' => $results['total'], 'voted' => $votes));
+  }
+
+  return $output;
 }
 
 /*
@@ -341,36 +342,36 @@ function advpoll_display_results($content_type, $nid, $data) {
  */
 
 function advpoll_update_choices($choices, $results) {
-    $choiceSet = array();
-    foreach ($choices as $choice) {
-        $choiceSet[$choice['choice_id']] = $choice['choice'];
+  $choiceSet = array();
+  foreach ($choices as $choice) {
+    $choiceSet[$choice['choice_id']] = $choice['choice'];
+  }
+
+  $final = array();
+
+  foreach ($results as $result) {
+    $final[] = array(
+        'title' => $choiceSet[$result['index']],
+        'percentage' => $result['percentage'],
+        'votes' => $result['votes'],
+        'tag' => $result['index']
+    );
+
+    unset($choiceSet[$result['index']]);
+  }
+
+  if (count($choiceSet) > 0) {
+    foreach ($choiceSet as $key => $choice) {
+      $final[] = array(
+          'title' => $choice,
+          'percentage' => 0,
+          'votes' => 0,
+          'tag' => $key,
+      );
     }
+  }
 
-    $final = array();
-
-    foreach ($results as $result) {
-        $final[] = array(
-            'title' => $choiceSet[$result['index']],
-            'percentage' => $result['percentage'],
-            'votes' => $result['votes'],
-            'tag' => $result['index']
-        );
-
-        unset($choiceSet[$result['index']]);
-    }
-
-    if (count($choiceSet) > 0) {
-        foreach ($choiceSet as $key => $choice) {
-            $final[] = array(
-                'title' => $choice,
-                'percentage' => 0,
-                'votes' => 0,
-                'tag' => $key,
-            );
-        }
-    }
-
-    return $final;
+  return $final;
 }
 
 /*
@@ -380,204 +381,204 @@ function advpoll_update_choices($choices, $results) {
  */
 
 function advpoll_choice_form($form, &$form_state, $values) {
-    $data = advpoll_get_data($values);
-    $count = count($data->choices);
-    $options = array();
-    $id = floor(rand(1, 5) * time() / 1000);
+  $data = advpoll_get_data($values);
+  $count = count($data->choices);
+  $options = array();
+  $id = floor(rand(1, 5) * time() / 1000);
 
-    $form['#id'] = 'advpoll-form-' . $id . '-' . $values->nid;
-    for ($i = 0; $i < $count; $i++) {
-        if (!$data->choices[$i]['write_in']) {
-            $options[] = strip_tags($data->choices[$i]['choice']);
-        }
+  $form['#id'] = 'advpoll-form-' . $id . '-' . $values->nid;
+  for ($i = 0; $i < $count; $i++) {
+    if (!$data->choices[$i]['write_in']) {
+      $options[] = strip_tags($data->choices[$i]['choice']);
     }
-    $options = drupal_map_assoc($options);
-    $input_type = 'radios';
-    if ($data->max_choices > 1) {
-        $input_type = 'checkboxes';
-    }
+  }
+  $options = drupal_map_assoc($options);
+  $input_type = 'radios';
+  if ($data->max_choices > 1) {
+    $input_type = 'checkboxes';
+  }
 
-    if ($data->write_in && $data->mode != 'unlimited') {
-        $options['write-in'] = t('(Write-in)');
-        $form['choice_' + $count] = array(
-            '#type' => $input_type,
-            '#title' => '',
-            '#options' => $options,
-            '#ajax' => array(
-                'callback' => 'advpoll_writein_callback',
-                'wrapper' => 'advpoll-form-' . $id . '-' . $values->nid,
-                'effect' => 'fade',
-            )
-        );
-
-        if (isset($form_state['values'])) {
-            foreach ($form_state['values'] as $key => $item) {
-                if (is_numeric($key)) {
-                    break;
-                }
-            }
-
-            $selected = false;
-            if ($input_type == 'radios') {
-                if ($item === 'write-in') {
-                    $selected = true;
-                }
-            } else {
-                if ($item['write-in']) {
-                    $selected = true;
-                }
-            }
-
-            if ($selected) {
-                $form['write_in'] = array(
-                    '#type' => 'textfield',
-                    '#element_validate' => array('advpoll_writein_validate'),
-                    '#prefix' => '<div class="advpoll-write-in">',
-                    '#suffix' => '</div>',
-                    '#size' => '30'
-                );
-            }
-        }
-    } else {
-        $form['choice_' + $count] = array(
-            '#type' => $input_type,
-            '#title' => '',
-            '#options' => drupal_map_assoc($options),
-        );
-    }
-
-    $form['submit'] = array(
-        '#type' => 'submit',
+  if ($data->write_in && $data->mode != 'unlimited') {
+    $options['write-in'] = t('(Write-in)');
+    $form['choice_' + $count] = array(
+        '#type' => $input_type,
+        '#title' => '',
+        '#options' => $options,
         '#ajax' => array(
-            'callback' => 'advpoll_form_submit',
+            'callback' => 'advpoll_writein_callback',
             'wrapper' => 'advpoll-form-' . $id . '-' . $values->nid,
-            'name' => 'submit1',
-        ),
-        '#value' => t('Vote'),
+            'effect' => 'fade',
+        )
     );
 
-    return $form;
+    if (isset($form_state['values'])) {
+      foreach ($form_state['values'] as $key => $item) {
+        if (is_numeric($key)) {
+          break;
+        }
+      }
+
+      $selected = false;
+      if ($input_type == 'radios') {
+        if ($item === 'write-in') {
+          $selected = true;
+        }
+      } else {
+        if ($item['write-in']) {
+          $selected = true;
+        }
+      }
+
+      if ($selected) {
+        $form['write_in'] = array(
+            '#type' => 'textfield',
+            '#element_validate' => array('advpoll_writein_validate'),
+            '#prefix' => '<div class="advpoll-write-in">',
+            '#suffix' => '</div>',
+            '#size' => '30'
+        );
+      }
+    }
+  } else {
+    $form['choice_' + $count] = array(
+        '#type' => $input_type,
+        '#title' => '',
+        '#options' => drupal_map_assoc($options),
+    );
+  }
+
+  $form['submit'] = array(
+      '#type' => 'submit',
+      '#ajax' => array(
+          'callback' => 'advpoll_form_submit',
+          'wrapper' => 'advpoll-form-' . $id . '-' . $values->nid,
+          'name' => 'submit1',
+      ),
+      '#value' => t('Vote'),
+  );
+
+  return $form;
 }
 
 function advpoll_writein_validate($element, &$form_state, $form) {
-    if (empty($element['#value'])) {
-        form_error($element, t('Please type in your write-in choice or select a different option.'));
-    }
+  if (empty($element['#value'])) {
+    form_error($element, t('Please type in your write-in choice or select a different option.'));
+  }
 }
 
 function advpoll_writein_callback($form, $form_state) {
-    return $form;
+  return $form;
 }
 
 /**
  * Submit handler for voting
  */
 function advpoll_form_submit($form, &$form_state) {
-    $data = advpoll_get_form_data($form_state);
-    $count = count($data->choices);
-    $votes = $form[$count]['#value'];
-    $nid = $form_state['build_info']['args'][0]->nid;
-    $type = 'advpoll';
-    $writein = '';
+  $data = advpoll_get_form_data($form_state);
+  $count = count($data->choices);
+  $votes = $form[$count]['#value'];
+  $nid = $form_state['build_info']['args'][0]->nid;
+  $type = 'advpoll';
+  $writein = '';
 
-    $message = advpoll_form_submit_check($data, $nid, $type);
-    
-    if ($message) {
+  $message = advpoll_form_submit_check($data, $nid, $type);
+
+  if ($message) {
+    $form['message'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="message">',
+        '#suffix' => '</div>',
+        '#markup' => $message,
+    );
+    return $form;
+  }
+
+  // check to see if a write-in exists and was filled in.
+  if ($data->write_in) {
+
+    if (isset($form_state['values']['write_in'])) {
+      $writein = $form_state['values']['write_in'];
+
+      // sanitize and check to see if there's a valid write in afterward
+      $writein = trim(strip_tags($writein));
+      $writein = check_plain($writein);
+
+      if ($writein) {
+        $data->choices[] = advpoll_process_writein($nid, $writein, $data);
+      } else {
         $form['message'] = array(
             '#type' => 'markup',
             '#prefix' => '<div id="message">',
             '#suffix' => '</div>',
-            '#markup' => $message,
+            '#markup' => t('Please type in a valid write-in choice or select a different option.'),
         );
         return $form;
+      }
+    }
+  }
+
+  // data structure returned from form is based upon whether it was a radios
+  // or checkbox element
+  if ($data->max_choices > 1) {
+    if ($writein) {
+      unset($votes['write-in']);
+      $votes[$writein] = $writein;
+    }
+    $selected = advpoll_checkbox_selected($data->choices, $votes);
+  } else {
+    if ($writein) {
+      $votes = $writein;
+    }
+    $selected = advpoll_radio_selected($data->choices, $votes);
+  }
+
+  if (count($selected) > 0 && count($selected) <= $data->max_choices) {
+    foreach ($selected as $item) {
+      $vote = array();
+      $vote['type'] = 'advpoll';
+      $vote['tag'] = $item;
+      $vote['nid'] = $nid;
+      $vote['value'] = 1;
+      $vote['mode'] = $data->mode;
+      $vote['duration'] = $data->cookie_duration;
+      advpoll_add_votes($vote);
     }
 
-    // check to see if a write-in exists and was filled in.
-    if ($data->write_in) {
-
-        if (isset($form_state['values']['write_in'])) {
-            $writein = $form_state['values']['write_in'];
-
-            // sanitize and check to see if there's a valid write in afterward
-            $writein = trim(strip_tags($writein));
-            $writein = check_plain($writein);
-
-            if ($writein) {
-                $data->choices[] = advpoll_process_writein($nid, $writein, $data);
-            } else {
-                $form['message'] = array(
-                    '#type' => 'markup',
-                    '#prefix' => '<div id="message">',
-                    '#suffix' => '</div>',
-                    '#markup' => t('Please type in a valid write-in choice or select a different option.'),
-                );
-                return $form;
-            }
-        }
-    }
-
-    // data structure returned from form is based upon whether it was a radios 
-    // or checkbox element
-    if ($data->max_choices > 1) {
-        if ($writein) {
-            unset($votes['write-in']);
-            $votes[$writein] = $writein;
-        }
-        $selected = advpoll_checkbox_selected($data->choices, $votes);
-    } else {
-        if ($writein) {
-            $votes = $writein;
-        }
-        $selected = advpoll_radio_selected($data->choices, $votes);
-    }
-
-    if (count($selected) > 0 && count($selected) <= $data->max_choices) {
-        foreach ($selected as $item) {
-            $vote = array();
-            $vote['type'] = 'advpoll';
-            $vote['tag'] = $item;
-            $vote['nid'] = $nid;
-            $vote['value'] = 1;
-            $vote['mode'] = $data->mode;
-            $vote['duration'] = $data->cookie_duration;
-            advpoll_add_votes($vote);
-        }
-
-        $element['#markup'] = advpoll_display_results('advpoll', $nid, $data);
-        return $element;
-    } else {
-        $form['message'] = array(
-            '#type' => 'markup',
-            '#prefix' => '<div id="message">',
-            '#suffix' => '</div>',
-            '#markup' => t('Select up to @quantity @votes.', array('@quantity' => $data->max_choices, '@votes' => format_plural($data->max_choices, 'vote', 'votes'))),
-        );
-        return $form;
-    }
+    $element['#markup'] = advpoll_display_results('advpoll', $nid, $data);
+    return $element;
+  } else {
+    $form['message'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="message">',
+        '#suffix' => '</div>',
+        '#markup' => t('Select up to @quantity @votes.', array('@quantity' => $data->max_choices, '@votes' => format_plural($data->max_choices, 'vote', 'votes'))),
+    );
+    return $form;
+  }
 }
 
 // Method is used to check again for user having already voted to prevent having multiple
 // instances of the same poll open on different pages to cast more votes.
 function advpoll_form_submit_check($data, $nid, $type) {
-    if ($data->mode === 'cookie' && isset($_COOKIE['advpoll' . $nid])) {
-        return t('You have already voted on this poll.');
+  if ($data->mode === 'cookie' && isset($_COOKIE['advpoll' . $nid])) {
+    return t('You have already voted on this poll.');
+  }
+
+  if ($data->mode === 'normal') {
+    global $user;
+    $criteria = array();
+    $criteria['entity_id'] = $nid;
+    $criteria['entity_type'] = $type;
+
+    $criteria['uid'] = $user->uid;
+
+    $results = votingapi_select_votes($criteria);
+    if ($results) {
+      return t('You have already voted on this poll.');
     }
+  }
 
-    if ($data->mode === 'normal') {
-        global $user;
-        $criteria = array();
-        $criteria['entity_id'] = $nid;
-        $criteria['entity_type'] = $type;
-
-        $criteria['uid'] = $user->uid;
-
-        $results = votingapi_select_votes($criteria);
-        if ($results) {
-            return t('You have already voted on this poll.');
-        }
-    }
-
-    return;
+  return;
 }
 
 /*
@@ -588,19 +589,19 @@ function advpoll_form_submit_check($data, $nid, $type) {
  */
 
 function advpoll_process_writein($nid, $writein, $data) {
-    $node = node_load($nid);
-    $id = dechex(time() * rand(5, 50));
-    $writein_choice = array();
+  $node = node_load($nid);
+  $id = dechex(time() * rand(5, 50));
+  $writein_choice = array();
 
-    if ($node) {
-        $nodeChoices = $node->advpoll_choice[$node->language];
-        $writein_choice = array('choice' => $writein, 'write_in' => 1, 'choice_id' => $id);
-        $nodeChoices[] = $writein_choice;
-        $node->advpoll_choice[$node->language] = $nodeChoices;
-        node_save($node);
-    }
+  if ($node) {
+    $nodeChoices = $node->advpoll_choice[$node->language];
+    $writein_choice = array('choice' => $writein, 'write_in' => 1, 'choice_id' => $id);
+    $nodeChoices[] = $writein_choice;
+    $node->advpoll_choice[$node->language] = $nodeChoices;
+    node_save($node);
+  }
 
-    return $writein_choice;
+  return $writein_choice;
 }
 
 /*
@@ -608,8 +609,8 @@ function advpoll_process_writein($nid, $writein, $data) {
  */
 
 function advpoll_get_recent() {
-    $node = null;
-    $result = db_query("SELECT n.nid FROM {node} n 
+  $node = null;
+  $result = db_query("SELECT n.nid FROM {node} n
                         LEFT JOIN {field_data_advpoll_dates} d 
                         ON d.entity_id = n.nid 
                         LEFT JOIN {field_data_advpoll_closed} c
@@ -625,14 +626,14 @@ function advpoll_get_recent() {
                         d.advpoll_dates_value2 > NOW() 
                         GROUP BY n.nid ORDER BY n.created DESC 
                         LIMIT 1");
-    if ($result) {
-        foreach ($result as $record) {
-            $node = node_load($record->nid);
-            break;
-        }
-
-        return drupal_render(node_view($node));
+  if ($result) {
+    foreach ($result as $record) {
+      $node = node_load($record->nid);
+      break;
     }
+
+    return drupal_render(node_view($node));
+  }
 }
 
 /*
@@ -641,7 +642,7 @@ function advpoll_get_recent() {
  */
 
 function advpoll_get_poll_info_blocks($blocks) {
-    $result = db_query("SELECT n.title, n.nid FROM node n 
+  $result = db_query("SELECT n.title, n.nid FROM node n
                         LEFT JOIN field_data_advpoll_dates d 
                         ON d.entity_id = n.nid 
                         LEFT JOIN field_data_advpoll_closed c
@@ -657,16 +658,16 @@ function advpoll_get_poll_info_blocks($blocks) {
                         d.advpoll_dates_value < NOW() AND d.advpoll_dates_value2 > NOW() 
                         GROUP BY n.nid 
                         ORDER BY n.created DESC");
-    if ($result) {
-        foreach ($result as $record) {
+  if ($result) {
+    foreach ($result as $record) {
 
-            $blocks['advpoll_block_' . $record->nid] = array(
-                'info' => t('Advanced Poll: @title', array('@title' => $record->title)),
-            );
-        }
+      $blocks['advpoll_block_' . $record->nid] = array(
+          'info' => t('Advanced Poll: @title', array('@title' => $record->title)),
+      );
     }
+  }
 
-    return $blocks;
+  return $blocks;
 }
 
 /*
@@ -674,30 +675,30 @@ function advpoll_get_poll_info_blocks($blocks) {
  */
 
 function advpoll_generate_block_view($block, $delta) {
-    $parts = explode('_', $delta);
-    $nid = $parts[count($parts) - 1];
-    $isBlock = false;
+  $parts = explode('_', $delta);
+  $nid = $parts[count($parts) - 1];
+  $isBlock = false;
 
-    $node = node_load($nid);
+  $node = node_load($nid);
 
-    $options = $node->advpoll_options[$node->language];
+  $options = $node->advpoll_options[$node->language];
 
-    // need to check to see if the nid is meant to display as a block or not.
-    // It's possible the value gets switched off but the block id is still 
-    // assigned to a region and will display anyway.
-    foreach ($options as $option) {
-        if ($option['value'] == 'block') {
-            $isBlock = true;
-        }
+  // need to check to see if the nid is meant to display as a block or not.
+  // It's possible the value gets switched off but the block id is still
+  // assigned to a region and will display anyway.
+  foreach ($options as $option) {
+    if ($option['value'] == 'block') {
+      $isBlock = true;
     }
+  }
 
-    if ($isBlock) {
-        $block['subject'] = t('Poll');
-        $block['content'] = array(
-            '#markup' => drupal_render(node_view($node)),
-        );
-    }
-    return $block;
+  if ($isBlock) {
+    $block['subject'] = t('Poll');
+    $block['content'] = array(
+        '#markup' => drupal_render(node_view($node)),
+    );
+  }
+  return $block;
 }
 
 /**
@@ -708,11 +709,11 @@ function advpoll_generate_block_view($block, $delta) {
  * with the appropriate access to be able to see the results.
  */
 function _advpoll_results_access($node) {
-    if ($node->type == 'advpoll') {
-        $data = advpoll_get_data($node);
-        $votes = advpoll_get_votes($node->type, $node->nid);
-        return ($data->show_results && $votes['total'] > 0 && (user_access("show vote results") || user_access('administer polls')));
-    }
+  if ($node->type == 'advpoll') {
+    $data = advpoll_get_data($node);
+    $votes = advpoll_get_votes($node->type, $node->nid);
+    return ($data->show_results && $votes['total'] > 0 && (user_access("show vote results") || user_access('administer polls')));
+  }
 }
 
 /**
@@ -722,10 +723,10 @@ function _advpoll_results_access($node) {
  * to be able to add or remove users from electoral list.
  */
 function _advpoll_electoral_list_access($node) {
-    if ($node->type == 'advpoll') {
-        $data = advpoll_get_data($node);
-        return ((user_access('access electoral list') || user_access('administer polls')) && $data->electoral);
-    }
+  if ($node->type == 'advpoll') {
+    $data = advpoll_get_data($node);
+    return ((user_access('access electoral list') || user_access('administer polls')) && $data->electoral);
+  }
 }
 
 /**
@@ -734,21 +735,21 @@ function _advpoll_electoral_list_access($node) {
  * Users with administer poll access can always see this page.
  */
 function _advpoll_votes_access($node) {
-    if ($node->type == 'advpoll') {
-        $data = advpoll_get_data($node);
-        $votes = advpoll_get_votes($node->type, $node->nid);
-        return ($votes['total'] > 0 && ((user_access('inspect all votes') && $data->show_votes) || user_access('administer polls')));
-    }
+  if ($node->type == 'advpoll') {
+    $data = advpoll_get_data($node);
+    $votes = advpoll_get_votes($node->type, $node->nid);
+    return ($votes['total'] > 0 && ((user_access('inspect all votes') && $data->show_votes) || user_access('administer polls')));
+  }
 }
 
 /**
  * Clear votes access callback.
  */
 function _advpoll_clear_votes_access($node) {
-    if ($node->type == 'advpoll') {
-        $votes = advpoll_get_votes($node->type, $node->nid);
-        return ($votes['total'] > 0 && user_access('administer polls'));
-    }
+  if ($node->type == 'advpoll') {
+    $votes = advpoll_get_votes($node->type, $node->nid);
+    return ($votes['total'] > 0 && user_access('administer polls'));
+  }
 }
 
 /**
@@ -757,8 +758,8 @@ function _advpoll_clear_votes_access($node) {
  * Only users with administer poll level access should be able to view this page.
  */
 function _advpoll_writeins_access($node) {
-    if ($node->type == 'advpoll') {
-        $data = advpoll_get_data($node);
-        return (user_access('administer polls') && $data->write_in);
-    }
+  if ($node->type == 'advpoll') {
+    $data = advpoll_get_data($node);
+    return (user_access('administer polls') && $data->write_in);
+  }
 }

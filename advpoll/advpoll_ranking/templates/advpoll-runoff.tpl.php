@@ -10,8 +10,6 @@
  *      
  * - $percentage: percentage of votes received by top candidate
  *   
- * TODO: list items with the same total as one item in the list instead of
- * a separate item.
  */
 ?>
 <div class="run-off-poll">
