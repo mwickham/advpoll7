@@ -11,6 +11,10 @@
  * 
  * Variables available:
  * - $votes
+ * - $nid: Node id of the poll.
+ * - $cancel_form: Provides a form for deleting user's votes when they have 
+ *   permission to do so.
+ * 
  *   An array containing unique ids of the choice(s) selected by the user. 
  * - $data: 
  *   object containing the following fields.
@@ -38,7 +42,7 @@
  */
 ?>
 
-<div class="poll-noresult">
+<div class="poll-noresult" id="advpoll-<?php print $nid; ?>">
     <?php if ($data->show_results == 'never'): ?>
     <p><?php print t('The results of this poll are not available.'); ?></p>
     <?php endif; ?>
@@ -50,5 +54,7 @@
 
     <?php if ($votes): ?>
     <div class="poll-message"><?php print t('Thank you for voting.'); ?></div>
-    <?php endif; ?>        
+    <?php endif; ?>    
+
+    <?php print $cancel_form; ?>
 </div>

@@ -7,12 +7,14 @@
  * Variables available:
  * - $total: Total number of votes.
  * - $rows: An ordered array with the results of each candidate/choice.
+ * - $nid: Node id of poll
+ * - $cancel_form: Cancel button for users eligibile to clear their own vote.
  *      
  * - $percentage: percentage of votes received by top candidate
  *   
  */
 ?>
-<div class="run-off-poll">
+<div class="run-off-poll" id="advpoll-<?php print $nid; ?>">
     <ol>
         <?php for($i = 0; $i < count($rows); $i++): ?>
         <li><?php print $rows[$i]['choice']; ?>
@@ -42,4 +44,6 @@
         
     </table>
     <?php endif; ?>
+
+        <?php print $cancel_form; ?>
 </div>
