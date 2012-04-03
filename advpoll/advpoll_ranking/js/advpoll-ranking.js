@@ -7,13 +7,12 @@
     
     var currentIndex = 0;
     var totalItems = 0;
-    var formID ='';
     
     Drupal.behaviors.advpollModule = {
         attach: function (context, settings) {
-            if (Drupal.settings && Drupal.settings.advpoll_ranking.nid){
+            if (Drupal.settings && Drupal.settings.advpoll_ranking.display){
                 // only rebuild draggable form if it doesn't yet exist'
-                formID = '#advpoll-ranking-form-'+Drupal.settings.advpoll_ranking.nid;
+                var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
                 if ($(formID+' ul.selectable-list').length < 1) {
                     currentIndex = 0;
                     $('.advpoll-ranking-wrapper '+formID+' #advpolltable').css('display', 'block');
@@ -91,6 +90,7 @@
     
     // called when an item is added or removed from the list or upon initialization
     Drupal.advpollUpdateEvents =  function () {
+        var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
         Drupal.advpollRemoveEvents();
         $('.advpoll-ranking-wrapper '+formID+' ul.selectable-list li a.add').bind('click', function(){
             var element = $(this).parents('li');
@@ -124,6 +124,7 @@
 
     // called when items are dragged in selected list.
     Drupal.advpollReorderChoices = function() {
+        var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
         var choices = [];
         
         $('.advpoll-ranking-wrapper '+formID+' tr li').each(function() {
@@ -137,6 +138,7 @@
     
     // Called to ensure that we never bind the click events multiple times.
     Drupal.advpollRemoveEvents =  function () {
+        var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
         $('.advpoll-ranking-wrapper '+formID+' ul.selectable-list li a.add').unbind('click');
         $('.advpoll-ranking-wrapper '+formID+' td a.remove').unbind('click');
         Drupal.advpollUpdateSelect();
@@ -144,6 +146,7 @@
    
     // Update markup and field values when items are rearranged.
     Drupal.advpollUpdateSelect = function() {
+        var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
         $('.advpoll-ranking-wrapper '+formID+' #advpolltable tbody tr').each(function(index) {
             if ($(this).find('select').length) {
                 $(this).css('visibility', 'visible');
@@ -180,6 +183,7 @@
     }
    
     Drupal.advpollUpdateCount = function () {
+        var formID = '#advpoll-ranking-form-'+$('.advpoll-identity').attr('nid');
         var votes = totalItems - currentIndex;
         $('.advpoll-ranking-wrapper '+formID+' #advpolltable tfoot tr.message td').empty().append('<p>'+Drupal.t('Votes remaining:')+' '+votes+'</p>');   
     }
@@ -198,10 +202,5 @@
     Drupal.theme.prototype.tableDragChangedMarker = function () {
         return [];
     };   
-    
-    $(document).ready(function(){
-        console.log(Drupal.settings.advpoll_ranking.nid);
-    }
-    );
     
 })(jQuery);

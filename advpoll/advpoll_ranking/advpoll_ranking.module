@@ -26,7 +26,7 @@ function advpoll_ranking_node_view($node, $view_mode) {
                 $voteform = '<div class="advpoll-ranking-wrapper">' . drupal_render(drupal_get_form('advpoll_ranking_choice_form', $node)) . '</div>';
                 $node->content['advpoll_choice'] = array('#markup' => $voteform, '#weight' => 1);
                 drupal_add_js(drupal_get_path('module', 'advpoll_ranking') . '/js/advpoll-ranking.js', 'file');
-                drupal_add_js(array('advpoll_ranking' => array('display' => 'true', 'nid' => $node->nid)), 'setting');
+                drupal_add_js(array('advpoll_ranking' => array('display' => 'true')), 'setting');
             } else {
                 // get user's votes if they're logged in and if voting is normal
                 $votes = array();
@@ -244,6 +244,11 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $form['#id'] = 'advpoll-ranking-form-' . $values->nid;
     $form['choice'] = array('#tree' => TRUE);
 
+    $form['identity-markup'] = array(
+        '#type' => 'item',
+        '#markup' => '<div class="advpoll-identity" nid="'.$values->nid.'"></div>',
+    );    
+    
     for ($i = 0; $i < $count; $i++) {
         if (!$data->choices[$i]['write_in']) {
             $form['choice'][$i] = array(
