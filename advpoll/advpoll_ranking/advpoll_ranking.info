@@ -1,5 +1,5 @@
 name = Advanced Ranking Poll
-description = "Extends the functionality of Advanced Poll with borda and instant run-off style polling."
+description = "Extends the functionality of Advanced Poll with borda and instant-runoff style polling."
 dependencies[] = advpoll
 
 core = 7.x

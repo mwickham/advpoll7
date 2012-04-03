@@ -4,14 +4,17 @@
  * @file
  * Advanced Ranking Poll Module 2/29/2012 MW
  */
-
+// adding these in case no normal polls have caused them to be added. There
+// appeared to be an issue with the includes going missing in those cases. The
+// module_load_include only adds them once so it's safe.
 module_load_include('inc', 'advpoll', 'includes/advpoll_voteapi');
 module_load_include('inc', 'advpoll', 'includes/advpoll_helper');
 
 /*
  * Implements hook_node_view
+ * Overriding what advanced poll does with the node_view hook for those polls
+ * that are either borda or runoff.
  */
-
 function advpoll_ranking_node_view($node, $view_mode) {
     if ($node->type == 'advpoll') {
         // JS needs to be present for any ranking poll in case form is re-rendered by vote cancellation.
@@ -66,7 +69,6 @@ function advpoll_ranking_menu_alter(&$items) {
  * Implements hook_form_alter().
  * Add validation to limit number of choices.
  */
-
 function advpoll_ranking_form_alter(&$form, $form_state, $form_id) {
     if ($form_id == 'advpoll_node_form') {
         $lang = $form['language']['#value'];
@@ -113,7 +115,7 @@ function advpoll_ranking_results_page($node) {
 
 /**
  * Display the overridden votes page. Uses almost the same output but allows grouping
- * for borda and instant run-off.
+ * for borda and instant-runoff.
  * */
 function advpoll_ranking_votes_page($node) {
     drupal_add_css(drupal_get_path('module', 'advpoll') . '/css/advpoll.css', array('group' => CSS_DEFAULT, 'every_page' => TRUE));
@@ -232,7 +234,6 @@ function advpoll_ranking_theme($existing, $type, $theme, $path) {
 /*
  * form view for ranking forms used in Borda and Instant Run-off
  */
-
 function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $data = advpoll_get_data($values);
     $count = count($data->choices);
@@ -244,6 +245,8 @@ function advpoll_ranking_choice_form($form, &$form_state, $values) {
     $form['#id'] = 'advpoll-ranking-form-' . $values->nid;
     $form['choice'] = array('#tree' => TRUE);
 
+    // need some way to get the unique NID value for javascript. This assists with
+    // issues inwhich more than one ranking poll is displaying on a page.
     $form['identity-markup'] = array(
         '#type' => 'item',
         '#markup' => '<div class="advpoll-identity" nid="'.$values->nid.'"></div>',
