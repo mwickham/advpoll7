@@ -15,7 +15,6 @@
                 // only rebuild draggable form if it doesn't yet exist'
                 formID = '#advpoll-ranking-form-'+Drupal.settings.advpoll_ranking.nid;
                 if ($(formID+' ul.selectable-list').length < 1) {
-                    console.log(settings);
                     currentIndex = 0;
                     $('.advpoll-ranking-wrapper '+formID+' #advpolltable').css('display', 'block');
                     $('.advpoll-ranking-wrapper '+formID+' select').css('display', 'none');
@@ -25,7 +24,7 @@
                     $('.advpoll-ranking-wrapper '+formID+' .form-type-textfield').wrap('<li class="selectable" />');
                     $('.advpoll-ranking-wrapper '+formID+' li').wrapAll('<ul class="selectable-list" />');
                     $('.advpoll-ranking-wrapper '+formID+' #advpolltable').append('<tfoot><tr class="submit-row"><td></td></tr><tr class="message"><td></td></tr></tfoot>');
-                    $('.advpoll-ranking-wrapper '+formID+' #advpolltable tfoot tr.submit-row td').append($('.advpoll-ranking-wrapper .form-submit'));
+                    $('.advpoll-ranking-wrapper '+formID+' #advpolltable tfoot tr.submit-row td').append($('.advpoll-ranking-wrapper '+formID+' .form-submit'));
                     $('.advpoll-ranking-wrapper '+formID+' li a').each(function(index){
                         $(this).data('index', index);
                     });                              
@@ -199,5 +198,10 @@
     Drupal.theme.prototype.tableDragChangedMarker = function () {
         return [];
     };   
+    
+    $(document).ready(function(){
+        console.log(Drupal.settings.advpoll_ranking.nid);
+    }
+    );
     
 })(jQuery);
