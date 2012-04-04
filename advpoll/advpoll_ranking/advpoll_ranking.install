@@ -17,7 +17,9 @@ function advpoll_ranking_uninstall() {
    */
 
   $nid = array();
-  $result = db_query("SELECT entity_id FROM {field_data_advpoll_behavior} f WHERE f.advpoll_behavior_value = 'borda' OR f.advpoll_behavior_value = 'runoff'");
+  $result = db_query("SELECT entity_id FROM {field_data_advpoll_behavior} f 
+                      WHERE f.advpoll_behavior_value = 'borda' 
+                      OR f.advpoll_behavior_value = 'runoff'");
   foreach ($result as $row) {
     $nid[] = $row->entity_id;
   }
@@ -33,14 +35,14 @@ function advpoll_ranking_uninstall() {
 
   // set field back to its default settings.
   $field = array(
-      'field_name' => 'advpoll_behavior',
-      'settings' => array(
-          'allowed_values' => array(
-              'approval' => $t('Approval voting'),
-              'pool' => $t('Pool votes and choices'),
-          ),
-          'allowed_values_function' => '',
+    'field_name' => 'advpoll_behavior',
+    'settings' => array(
+      'allowed_values' => array(
+        'approval' => $t('Approval voting'),
+        'pool' => $t('Pool votes and choices'),
       ),
+      'allowed_values_function' => '',
+    ),
   );
 
   field_update_field($field);
@@ -52,16 +54,16 @@ function advpoll_ranking_install() {
 
   // Add borda and run-off to allow ranking-style display and voting.
   $field = array(
-      'field_name' => 'advpoll_behavior',
-      'settings' => array(
-          'allowed_values' => array(
-              'approval' => $t('Approval voting'),
-              'pool' => $t('Pool votes and choices'),
-              'borda' => $t('Borda count (Ranking Poll)'),
-              'runoff' => $t('Instant-runoff (Ranking Poll)'),
-          ),
-          'allowed_values_function' => '',
+    'field_name' => 'advpoll_behavior',
+    'settings' => array(
+      'allowed_values' => array(
+        'approval' => $t('Approval voting'),
+        'pool' => $t('Pool votes and choices'),
+        'borda' => $t('Borda count (Ranking Poll)'),
+        'runoff' => $t('Instant-runoff (Ranking Poll)'),
       ),
+      'allowed_values_function' => '',
+    ),
   );
   field_update_field($field);
 }

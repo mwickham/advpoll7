@@ -6,11 +6,8 @@
  * a Boolean checkbox to indicate write-in status.
  */
 
-
 /**
  * Implements hook_field_info().
- *
- * Provides the description of the field.
  */
 function advpoll_field_field_info() {
   return array(
@@ -50,18 +47,15 @@ function advpoll_field_field_formatter_view($entity_type, $entity, $field, $inst
   $element = array();
 
   switch ($display['type']) {
-    // This formatter simply outputs the field as text and with a color.
     case 'advpoll_choice':
       foreach ($items as $delta => $item) {
-        $element[$delta]['#markup'] = filter_xss($item['choice']);
+        $element[$delta]['#markup'] = filter_xss($item['choice'], $allowed = array('em', 'strong', 'a', 'b', 'i'));
       }
       break;
   }
 
   return $element;
 }
-
-
 
 /**
  * Implements hook_field_widget_info().
@@ -77,7 +71,6 @@ function advpoll_field_field_widget_info() {
   );
 }
 
-
 /**
  * Implements hook_field_widget_form().
  *
@@ -86,7 +79,7 @@ function advpoll_field_field_widget_form(&$form, &$form_state, $field, $instance
   $element += array(
     '#delta' => $delta,
   );
-  
+
   switch ($instance['widget']['type']) {
     case 'advpoll_write_in':
       $element['choice'] = array(
@@ -102,27 +95,23 @@ function advpoll_field_field_widget_form(&$form, &$form_state, $field, $instance
         '#title' => t('Write-in (When checked, item will not be displayed for voting until unchecked.)'),
         '#default_value' => empty($items[$delta]['write_in']) ? 0 : 1,
       );
-      $default =  dechex(time() * rand(5, 50));
+      $default = dechex(time() * rand(5, 50));
       // decided to hex for a smaller value to stick into votingapi tag field. Added a randomized
       // multiplier to make absolutely sure value is unique if choices are created at the same time.
       $element['choice_id'] = array(
         '#type' => 'hidden',
         '#default_value' => empty($items[$delta]['choice_id']) ? $default : $items[$delta]['choice_id'],
       );
-
-
   }
   return $element;
 }
-
-
 
 /**
  * Implements hook_field_views_data().
  */
 function advpoll_field_field_views_data($field) {
   // An attempt to make a Views friendly display.
-    
+
   $views_fields = field_views_field_default_views_data($field);
   foreach ($views_fields as $key => $data) {
     $views_fields[$key][$field['field_name'] . '_choice']['argument']['name field'] = $field['field_name'] . '_choice';

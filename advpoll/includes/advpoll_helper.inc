@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Helper functions for converting node and form data into a more readable
  * and compact format that can easily be passed to sub-functions and templates.
@@ -34,41 +35,40 @@
  *   write_in:        Boolean - all write-in voting.
  *   block:           Boolean - Poll can be displayed as a block.
  */
-
 function advpoll_get_data($node) {
-    $data = array();
-    $lang = $node->language;
-    
-    if ($node->type == 'advpoll') {
-        $options = $node->advpoll_options[$lang];        
-        $data['choices'] = $node->advpoll_choice[$lang];
-        $data['start_date'] = strtotime($node->advpoll_dates[$lang][0]['value']);
-        $data['end_date'] = strtotime($node->advpoll_dates[$lang][0]['value2']);
-        $data['mode'] = $node->advpoll_mode[$lang][0]['value'];
-        $data['cookie_duration'] = $node->advpoll_cookie_duration[$lang][0]['value'];
-        $data['state'] = $node->advpoll_closed[$lang][0]['value'];
-        $data['behavior'] = $node->advpoll_behavior[$lang][0]['value'];
-        $data['max_choices'] = $node->advpoll_max_choices[$lang][0]['value'];
-        $data['show_results'] = $node->advpoll_results[$lang][0]['value'];
-        $data['electoral'] = advpoll_has_data($options, 'electoral');
-        $data['show_votes'] = advpoll_has_data($options, 'showvotes');
-        $data['write_in'] = advpoll_has_data($options, 'writein');
-        $data['block'] = advpoll_has_data($options, 'block');
-    }
+  $data = array();
+  $lang = $node->language;
 
-    return (object) $data;
+  if ($node->type == 'advpoll') {
+    $options = $node->advpoll_options[$lang];
+    $data['choices'] = $node->advpoll_choice[$lang];
+    $data['start_date'] = strtotime($node->advpoll_dates[$lang][0]['value']);
+    $data['end_date'] = strtotime($node->advpoll_dates[$lang][0]['value2']);
+    $data['mode'] = $node->advpoll_mode[$lang][0]['value'];
+    $data['cookie_duration'] = $node->advpoll_cookie_duration[$lang][0]['value'];
+    $data['state'] = $node->advpoll_closed[$lang][0]['value'];
+    $data['behavior'] = $node->advpoll_behavior[$lang][0]['value'];
+    $data['max_choices'] = $node->advpoll_max_choices[$lang][0]['value'];
+    $data['show_results'] = $node->advpoll_results[$lang][0]['value'];
+    $data['electoral'] = advpoll_has_data($options, 'electoral');
+    $data['show_votes'] = advpoll_has_data($options, 'showvotes');
+    $data['write_in'] = advpoll_has_data($options, 'writein');
+    $data['block'] = advpoll_has_data($options, 'block');
+  }
+
+  return (object) $data;
 }
 
 // convenience function to find value in a nested array.
 function advpoll_has_data($options, $term) {
 
-    foreach ($options as $option) {
-        if ($option['value'] == $term) {
-            return true;
-        }
+  foreach ($options as $option) {
+    if ($option['value'] == $term) {
+      return true;
     }
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -101,27 +101,26 @@ function advpoll_has_data($options, $term) {
  *   write_in:        Boolean - all write-in voting.
  *   block:           Boolean - Poll can be displayed as a block.
  */
-
 function advpoll_get_form_data($form_state) {
-    $data = array();
-    $lang = $form_state['build_info']['args'][0]->language;
+  $data = array();
+  $lang = $form_state['build_info']['args'][0]->language;
 
-    if ($form_state['build_info']['args'][0]->type == 'advpoll') {
-        $options = $form_state['build_info']['args'][0]->advpoll_options[$lang];        
-        $data['choices'] = $form_state['build_info']['args'][0]->advpoll_choice[$lang];
-        $data['start_date'] = strtotime($form_state['build_info']['args'][0]->advpoll_dates[$lang][0]['value']);
-        $data['end_date'] = strtotime($form_state['build_info']['args'][0]->advpoll_dates[$lang][0]['value2']);
-        $data['mode'] = $form_state['build_info']['args'][0]->advpoll_mode[$lang][0]['value'];
-        $data['cookie_duration'] = $form_state['build_info']['args'][0]->advpoll_cookie_duration[$lang][0]['value'];
-        $data['state'] = $form_state['build_info']['args'][0]->advpoll_closed[$lang][0]['value'];
-        $data['behavior'] = $form_state['build_info']['args'][0]->advpoll_behavior[$lang][0]['value'];
-        $data['max_choices'] = $form_state['build_info']['args'][0]->advpoll_max_choices[$lang][0]['value'];
-        $data['show_results'] = $form_state['build_info']['args'][0]->advpoll_results[$lang][0]['value'];
-        $data['electoral'] = advpoll_has_data($options, 'electoral');
-        $data['show_votes'] = advpoll_has_data($options, 'showvotes');
-        $data['write_in'] = advpoll_has_data($options, 'writein');
-        $data['block'] = advpoll_has_data($options, 'block');
-    }
+  if ($form_state['build_info']['args'][0]->type == 'advpoll') {
+    $options = $form_state['build_info']['args'][0]->advpoll_options[$lang];
+    $data['choices'] = $form_state['build_info']['args'][0]->advpoll_choice[$lang];
+    $data['start_date'] = strtotime($form_state['build_info']['args'][0]->advpoll_dates[$lang][0]['value']);
+    $data['end_date'] = strtotime($form_state['build_info']['args'][0]->advpoll_dates[$lang][0]['value2']);
+    $data['mode'] = $form_state['build_info']['args'][0]->advpoll_mode[$lang][0]['value'];
+    $data['cookie_duration'] = $form_state['build_info']['args'][0]->advpoll_cookie_duration[$lang][0]['value'];
+    $data['state'] = $form_state['build_info']['args'][0]->advpoll_closed[$lang][0]['value'];
+    $data['behavior'] = $form_state['build_info']['args'][0]->advpoll_behavior[$lang][0]['value'];
+    $data['max_choices'] = $form_state['build_info']['args'][0]->advpoll_max_choices[$lang][0]['value'];
+    $data['show_results'] = $form_state['build_info']['args'][0]->advpoll_results[$lang][0]['value'];
+    $data['electoral'] = advpoll_has_data($options, 'electoral');
+    $data['show_votes'] = advpoll_has_data($options, 'showvotes');
+    $data['write_in'] = advpoll_has_data($options, 'writein');
+    $data['block'] = advpoll_has_data($options, 'block');
+  }
 
-    return (object) $data;
+  return (object) $data;
 }

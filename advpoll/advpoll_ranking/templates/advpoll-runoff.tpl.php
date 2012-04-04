@@ -39,7 +39,7 @@
         <?php endfor; ?>
         </tbody>
         <tfoot>
-            <tr><td></td><td><?php print t('Total votes: :total', array(':total' => $total)); ?></td></tr>
+            <tr><td></td><td><?php print t('Total votes: @total', array('@total' => $total)); ?></td></tr>
         </tfoot>
         
     </table>

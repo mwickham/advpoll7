@@ -6,43 +6,43 @@
 
 function advpoll_converter_form($form, $form_state) {
   $form = array(
-      '#attributes' => array('class' => array('advpoll-converter-form')),
+    '#attributes' => array('class' => array('advpoll-converter-form')),
   );
   $form['info'] = array(
-      '#title' => t('Advanced Poll Converter'),
-      '#description' => t('Select core Drupal polls to convert to Advanced polls. As always with any conversion process, be sure to back up your data.'),
-      '#type' => 'fieldset',
-      '#tree' => FALSE,
+    '#title' => t('Advanced Poll Converter'),
+    '#description' => t('Select core Drupal polls to convert to Advanced polls. As always with any conversion process, be sure to back up your data.'),
+    '#type' => 'fieldset',
+    '#tree' => FALSE,
   );
   $polls = _advpoll_converter_get_polls();
   if ($polls) {
 
     $options = array(0 => t('No'), 1 => t('Yes'));
     $form['info']['advpoll_converter_delete'] = array(
-        '#title' => t('Delete source polls?'),
-        '#type' => 'radios',
-        '#options' => $options,
-        '#default_value' => 1,
-        '#description' => t('When the process is run, should original polls be deleted?'),
+      '#title' => t('Delete source polls?'),
+      '#type' => 'radios',
+      '#options' => $options,
+      '#default_value' => 1,
+      '#description' => t('When the process is run, should original polls be deleted?'),
     );
 
     $form['info']['advpoll_converter_select'] = array(
-        '#type' => 'select',
-        '#title' => t('Select polls to convert.'),
-        '#options' => $polls,
-        '#multiple' => true,
-        '#description' => t('Select the polls to convert.'),
-        '#size' => 10,
+      '#type' => 'select',
+      '#title' => t('Select polls to convert.'),
+      '#options' => $polls,
+      '#multiple' => true,
+      '#description' => t('Select the polls to convert.'),
+      '#size' => 10,
     );
 
     $form['info']['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Convert'),
+      '#type' => 'submit',
+      '#value' => t('Convert'),
     );
   } else {
     $form['info']['message'] = array(
-        '#type' => 'item',
-        '#markup' => t('There are currently no polls to convert.'),
+      '#type' => 'item',
+      '#markup' => t('There are currently no polls to convert.'),
     );
   }
 
@@ -110,8 +110,7 @@ function _advpoll_converter_create_nodes($nids) {
     $record->language = LANGUAGE_NONE;
 
     // fetch poll's choices
-    $poll_choices = db_query("SELECT pc.chid, pc.chtext FROM poll_choice pc where pc.nid = :nid",
-                    array(':nid' => $record->nid));
+    $poll_choices = db_query("SELECT pc.chid, pc.chtext FROM poll_choice pc where pc.nid = :nid", array(':nid' => $record->nid));
     $choice_by_id = array();
     $choices = array();
 
@@ -149,22 +148,21 @@ function _advpoll_converter_create_nodes($nids) {
     $nid = $node->nid;
 
     // update associated votes
-    $poll_votes = db_query("SELECT pv.chid, pv.uid, pv.hostname, pv.timestamp FROM poll_vote pv where pv.nid = :nid",
-                    array(':nid' => $record->nid));
+    $poll_votes = db_query("SELECT pv.chid, pv.uid, pv.hostname, pv.timestamp FROM poll_vote pv where pv.nid = :nid", array(':nid' => $record->nid));
     $votes = array();
     foreach ($poll_votes as $row) {
       $votes = array(
-          'entity_type' => 'advpoll',
-          'entity_id' => $nid,
-          'value' => 1,
-          'tag' => $choice_by_id[$row->chid],
-          'uid' => $row->uid,
-          'vote_source' => $row->hostname,
-          'timestamp' => $row->timestamp,
+        'entity_type' => 'advpoll',
+        'entity_id' => $nid,
+        'value' => 1,
+        'tag' => $choice_by_id[$row->chid],
+        'uid' => $row->uid,
+        'vote_source' => $row->hostname,
+        'timestamp' => $row->timestamp,
       );
 
       votingapi_set_votes($votes, $criteria = NULL);
     }
-    drupal_set_message(t('A new advanced poll node was created for :title.', array(':title' => $record->title)));
+    drupal_set_message(t('A new advanced poll node was created for %title.', array('%title' => $record->title)));
   }
 }
